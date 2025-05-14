@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
-import { FaMoon, FaSun, FaBars, FaTimes } from 'react-icons/fa'
+import { FaBars, FaTimes } from 'react-icons/fa'
 import { useTheme } from '../context/ThemeContext'
 import Logo from './common/Logo'
-import Button from './common/Button'
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
