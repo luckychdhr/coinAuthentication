@@ -1,0 +1,3 @@
+.cta-content {
+  will-change: transform, opacity; /* Hint browser for optimization */
+}
