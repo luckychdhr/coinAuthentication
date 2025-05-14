@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { useSpring, animated } from 'react-spring'
-import { useInView } from 'react-intersection-observer'
+import { motion, AnimatePresence } from 'framer-motion'
 import { FaQuoteLeft, FaArrowLeft, FaArrowRight } from 'react-icons/fa'
 
 const testimonials = [
@@ -24,50 +23,42 @@ const testimonials = [
   }
 ]
 
+const quoteVariants = {
+  initial: { opacity: 0, x: 50 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.5 } },
+  exit: { opacity: 0, x: -50, transition: { duration: 0.4 } }
+}
+
+const titleVariant = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+}
+
 const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1
-  })
-
-  const titleAnimation = useSpring({
-    opacity: inView ? 1 : 0,
-    transform: inView ? 'translateY(0)' : 'translateY(20px)',
-    config: { tension: 300, friction: 20 },
-    delay: 100
-  })
-  
-  const testimonialAnimation = useSpring({
-    opacity: 1,
-    transform: 'translateX(0)',
-    from: { opacity: 0, transform: 'translateX(50px)' },
-    reset: true,
-    config: { tension: 300, friction: 20 }
-  })
 
   const nextTestimonial = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === testimonials.length - 1 ? 0 : prevIndex + 1
-    )
+    setCurrentIndex((prev) => (prev + 1) % testimonials.length)
   }
 
   const prevTestimonial = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? testimonials.length - 1 : prevIndex - 1
-    )
+    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
   }
 
-  const currentTestimonial = testimonials[currentIndex]
-
   return (
-    <section ref={ref} className="testimonials-section">
-      <animated.h2 style={titleAnimation} className="section-title">
+    <section className="testimonials-section">
+      <motion.h2
+        className="section-title"
+        variants={titleVariant}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+      >
         What Our Users Say
-      </animated.h2>
+      </motion.h2>
 
       <div className="testimonials-container">
-        <button 
+        <button
           className="testimonial-nav-button prev"
           onClick={prevTestimonial}
           aria-label="Previous testimonial"
@@ -75,29 +66,34 @@ const Testimonials = () => {
           <FaArrowLeft />
         </button>
 
-        <animated.div 
-          style={testimonialAnimation} 
-          className="testimonial"
-          key={currentIndex}
-        >
-          <div className="testimonial-quote-icon">
-            <FaQuoteLeft />
-          </div>
-          <p className="testimonial-text">{currentTestimonial.quote}</p>
-          <div className="testimonial-author">
-            <img 
-              src={currentTestimonial.image} 
-              alt={currentTestimonial.author} 
-              className="testimonial-author-image" 
-            />
-            <div className="testimonial-author-info">
-              <h4 className="testimonial-author-name">{currentTestimonial.author}</h4>
-              <p className="testimonial-author-position">{currentTestimonial.position}</p>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            className="testimonial"
+            variants={quoteVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <div className="testimonial-quote-icon" style={{ color: '#FFD700' }}>
+              <FaQuoteLeft />
             </div>
-          </div>
-        </animated.div>
+            <p className="testimonial-text">{testimonials[currentIndex].quote}</p>
+            <div className="testimonial-author">
+              <img
+                src={testimonials[currentIndex].image}
+                alt={testimonials[currentIndex].author}
+                className="testimonial-author-image"
+              />
+              <div className="testimonial-author-info">
+                <h4 className="testimonial-author-name">{testimonials[currentIndex].author}</h4>
+                <p className="testimonial-author-position">{testimonials[currentIndex].position}</p>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
 
-        <button 
+        <button
           className="testimonial-nav-button next"
           onClick={nextTestimonial}
           aria-label="Next testimonial"
@@ -105,7 +101,7 @@ const Testimonials = () => {
           <FaArrowRight />
         </button>
       </div>
-      
+
       <div className="testimonial-indicators">
         {testimonials.map((_, index) => (
           <button

@@ -682,7 +682,7 @@ a:hover {
 .features-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var (--space-6);
+  gap: 20px;
 }
 
 /* How it works section */
@@ -871,6 +871,7 @@ a:hover {
 
 .cta-buttons {
   display: flex;
+  opacity: 1 !important;
   gap: var(--space-4);
   justify-content: center;
   flex-wrap: wrap;

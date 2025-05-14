@@ -1,80 +1,72 @@
-import { useSpring, animated } from 'react-spring'
-import { useInView } from 'react-intersection-observer'
+import { motion } from 'framer-motion'
 import Button from '../common/Button'
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 10 },
+  visible: (delay = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay, duration: 0.5, ease: 'easeOut' },
+  }),
+}
+
+const imageFade = {
+  hidden: { opacity: 0.5, scale: 0.985 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { delay: 0.3, duration: 0.6, ease: 'easeOut' },
+  },
+}
+
 const Hero = () => {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1
-  })
-
-  const titleAnimation = useSpring({
-    opacity: inView ? 1 : 0,
-    transform: inView ? 'translateY(0)' : 'translateY(10px)', // Reduced translate distance
-    config: { tension: 170, friction: 14 }, // Lowered tension and friction
-    delay: 100
-  })
-
-  const subtitleAnimation = useSpring({
-    opacity: inView ? 1 : 0,
-    transform: inView ? 'translateY(0)' : 'translateY(10px)', // Reduced translate distance
-    config: { tension: 170, friction: 14 },
-    delay: 200
-  })
-
-  const buttonAnimation = useSpring({
-    opacity: inView ? 1 : 0,
-    transform: inView ? 'translateY(0)' : 'translateY(8px)', // Reduced translate distance
-    config: { tension: 170, friction: 14 },
-    delay: 300
-  })
-
-  const imageAnimation = useSpring({
-    opacity: inView ? 1 : 0,
-    transform: inView ? 'scale(1)' : 'scale(0.98)', // Reduced scale difference
-    config: { tension: 160, friction: 12 }, // Lowered tension and friction
-    delay: 400
-  })
-
   return (
-    <section ref={ref} className="hero-section">
+    <section className="hero-section">
       <div className="hero-content">
-        <animated.h1 style={titleAnimation} className="hero-title">
+        <motion.h1
+          className="hero-title"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          custom={0}
+        >
           Secure Cryptocurrency Verification
-        </animated.h1>
-        
-        <animated.p style={subtitleAnimation} className="hero-subtitle">
+        </motion.h1>
+
+        <motion.p
+          className="hero-subtitle"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          custom={0.1}
+        >
           Instantly verify the authenticity of any cryptocurrency token or contract. 
           Protect yourself from scams and ensure your investments are legitimate.
-        </animated.p>
-        
-        <animated.div style={buttonAnimation} className="hero-buttons">
-          <Button 
-            label="Verify Now" 
-            variant="primary" 
-            size="large" 
-            path="/verify" 
-          />
-          <Button 
-            label="Learn More" 
-            variant="outline" 
-            size="large" 
-            path="/features" 
-          />
-        </animated.div>
+        </motion.p>
+
+       
+          <Button label="Verify Now" variant="primary" size="large" path="/verify" />
       </div>
-      
-      <animated.div style={imageAnimation} className="hero-image">
-        <img 
-          src="https://images.pexels.com/photos/8370752/pexels-photo-8370752.jpeg" 
-          alt="Cryptocurrency security verification" 
+
+      <motion.div
+        className="hero-image"
+        variants={imageFade}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+      >
+        <img
+          src="https://images.pexels.com/photos/8370752/pexels-photo-8370752.jpeg"
+          alt="Cryptocurrency security verification"
           className="hero-img"
-          loading="lazy" // Lazy load the image
+          loading="lazy"
         />
-        <div className="hero-image-overlay"></div>
-      </animated.div>
-      
-      <div className="hero-particles"></div>
+        <div className="hero-image-overlay" />
+      </motion.div>
+
+      <div className="hero-particles" />
     </section>
   )
 }

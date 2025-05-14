@@ -51,7 +51,7 @@ const Navbar = () => {
     { title: 'Home', path: '/' },
     { title: 'Verify', path: '/verify' },
     { title: 'Features', path: '/features' },
-    { title: 'Pricing', path: '/pricing' },
+    // { title: 'Pricing', path: '/pricing' },
     { title: 'About', path: '/about' },
     { title: 'Contact', path: '/contact' }
   ]
@@ -87,10 +87,7 @@ const Navbar = () => {
             onClick={toggleTheme}
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
-            {theme === 'dark' ? <FaSun /> : <FaMoon />}
           </button>
-          <Button label="Get Started" variant="primary" path="/verify" />
-          
           {/* Mobile menu toggle */}
           <button 
             className="mobile-menu-toggle" 
@@ -116,7 +113,6 @@ const Navbar = () => {
                 {link.title}
               </Link>
             ))}
-            <Button label="Get Started" variant="primary" path="/verify" fullWidth />
           </div>
         </animated.div>
       </div>

@@ -73,7 +73,7 @@ const VerificationForm = () => {
           </select>
         </div>
 
-        <div className="form-group">
+        {/* <div className="form-group">
           <label htmlFor="contractAddress">Contract Address</label>
           <input
             type="text"
@@ -85,7 +85,7 @@ const VerificationForm = () => {
             className="form-control"
             required
           />
-        </div>
+        </div> */}
 
         <Button
           label={isSubmitting ? "Verifying..." : "Verify Now"}
@@ -134,7 +134,7 @@ const VerificationForm = () => {
             </div>
           </div>
           
-          <div className="result-actions">
+          {/* <div className="result-actions">
             <Button
               label="View Detailed Report"
               variant="secondary"
@@ -146,7 +146,7 @@ const VerificationForm = () => {
               size="medium"
               onClick={() => setShowResults(false)}
             />
-          </div>
+          </div> */}
         </div>
       )}
     </animated.div>

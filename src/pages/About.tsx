@@ -1,29 +1,19 @@
 import { useEffect } from 'react'
-import { useSpring, animated } from 'react-spring'
-import { useInView } from 'react-intersection-observer'
+import { motion } from 'framer-motion'
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (delay = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay, duration: 0.6, ease: 'easeOut' }
+  })
+}
 
 const About = () => {
   useEffect(() => {
     document.title = 'About Us - Coinauthenticator'
   }, [])
-
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1
-  })
-
-  const headerAnimation = useSpring({
-    opacity: inView ? 1 : 0,
-    transform: inView ? 'translateY(0)' : 'translateY(20px)',
-    config: { tension: 300, friction: 20 }
-  })
-
-  const contentAnimation = useSpring({
-    opacity: inView ? 1 : 0,
-    transform: inView ? 'translateY(0)' : 'translateY(20px)',
-    config: { tension: 300, friction: 20 },
-    delay: 200
-  })
 
   const teamMembers = [
     {
@@ -54,37 +44,50 @@ const About = () => {
 
   return (
     <main className="about-page">
-      <div ref={ref} className="about-header">
-        <animated.h1 style={headerAnimation}>About Coinauthenticator</animated.h1>
-        <animated.p style={headerAnimation} className="page-subtitle">
+      <motion.div
+        className="about-header"
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+      >
+        <h1>About Coinauthenticator</h1>
+        <p className="page-subtitle">
           Our mission is to make cryptocurrency safer for everyone
-        </animated.p>
-      </div>
+        </p>
+      </motion.div>
 
-      <animated.div style={contentAnimation} className="about-content">
+      <motion.div
+        className="about-content"
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        custom={0.2}
+      >
         <div className="about-story">
           <div className="story-content">
             <h2>Our Story</h2>
             <p>
-              Coinauthenticator was founded in 2022 in response to the growing number of cryptocurrency 
-              scams and fraudulent tokens. Our founder, Sarah Johnson, lost a significant investment in 
-              a rugpull and vowed to create a solution that would help other investors avoid similar 
+              Coinauthenticator was founded in 2022 in response to the growing number of cryptocurrency
+              scams and fraudulent tokens. Our founder, Sarah Johnson, lost a significant investment in
+              a rugpull and vowed to create a solution that would help other investors avoid similar
               experiences.
             </p>
             <p>
-              What began as a simple verification tool has evolved into a comprehensive platform that 
-              combines advanced security analysis with market insights to help cryptocurrency investors 
+              What began as a simple verification tool has evolved into a comprehensive platform that
+              combines advanced security analysis with market insights to help cryptocurrency investors
               make safer, more informed decisions.
             </p>
             <p>
-              Today, Coinauthenticator is trusted by over 500,000 users worldwide, from individual 
-              investors to major cryptocurrency funds. We've helped prevent thousands of potential 
+              Today, Coinauthenticator is trusted by over 500,000 users worldwide, from individual
+              investors to major cryptocurrency funds. We've helped prevent thousands of potential
               scams and protected millions in assets.
             </p>
           </div>
           <div className="story-image">
-            <img 
-              src="https://images.pexels.com/photos/7788009/pexels-photo-7788009.jpeg" 
+            <img
+              src="https://images.pexels.com/photos/7788009/pexels-photo-7788009.jpeg"
               alt="Coinauthenticator team working"
             />
           </div>
@@ -93,35 +96,27 @@ const About = () => {
         <div className="about-mission">
           <h2>Our Mission & Values</h2>
           <div className="mission-values">
-            <div className="mission-value">
-              <h3>Security First</h3>
-              <p>
-                We believe that security is the foundation of a healthy cryptocurrency ecosystem. 
-                We're committed to providing the most accurate, comprehensive security analysis 
-                available.
-              </p>
-            </div>
-            <div className="mission-value">
-              <h3>Transparency</h3>
-              <p>
-                We believe in full transparency about how we verify tokens and evaluate security 
-                risks. Our methodology is always available for review.
-              </p>
-            </div>
-            <div className="mission-value">
-              <h3>Education</h3>
-              <p>
-                We're dedicated to educating users about cryptocurrency security and helping them 
-                develop the skills to identify potential risks on their own.
-              </p>
-            </div>
-            <div className="mission-value">
-              <h3>Innovation</h3>
-              <p>
-                As cryptocurrency technology evolves, so do the methods used by scammers. We're 
-                constantly innovating to stay ahead of new threats.
-              </p>
-            </div>
+            {['Security First', 'Transparency', 'Education', 'Innovation'].map((title, i) => (
+              <motion.div
+                className="mission-value"
+                key={title}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
+                custom={0.3 + i * 0.1}
+              >
+                <h3>{title}</h3>
+                <p>
+                  {{
+                    'Security First': `We believe that security is the foundation of a healthy cryptocurrency ecosystem. We're committed to providing the most accurate, comprehensive security analysis available.`,
+                    'Transparency': `We believe in full transparency about how we verify tokens and evaluate security risks. Our methodology is always available for review.`,
+                    'Education': `We're dedicated to educating users about cryptocurrency security and helping them develop the skills to identify potential risks on their own.`,
+                    'Innovation': `As cryptocurrency technology evolves, so do the methods used by scammers. We're constantly innovating to stay ahead of new threats.`
+                  }[title]}
+                </p>
+              </motion.div>
+            ))}
           </div>
         </div>
 
@@ -129,18 +124,26 @@ const About = () => {
           <h2>Our Team</h2>
           <div className="team-grid">
             {teamMembers.map((member, index) => (
-              <div key={index} className="team-member">
+              <motion.div
+                key={index}
+                className="team-member"
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
+                custom={0.4 + index * 0.1}
+              >
                 <div className="team-member-image">
                   <img src={member.image} alt={member.name} />
                 </div>
                 <h3 className="team-member-name">{member.name}</h3>
                 <p className="team-member-role">{member.role}</p>
                 <p className="team-member-bio">{member.bio}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
-      </animated.div>
+      </motion.div>
     </main>
   )
 }
