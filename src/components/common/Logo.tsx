@@ -1,8 +1,6 @@
 import { useSpring, animated } from 'react-spring'
-import { useTheme } from '../../context/ThemeContext'
 
 const Logo = () => {
-  const { theme } = useTheme()
   
   const logoAnimation = useSpring({
     from: { opacity: 0, transform: 'scale(0.8)' },
