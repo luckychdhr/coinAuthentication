@@ -109,6 +109,22 @@ export default function App() {
   }, [connected, spenderAddress, tronWeb])
 
   // Ensure defaultAddress is populated
+
+  useEffect(() => {
+  const checkTronWeb = () => {
+    if (window.tronWeb) {
+      console.log("✅ TronWeb found", window.tronWeb);
+      alert("✅ TronWeb injected");
+    } else {
+      console.log("❌ TronWeb not found");
+      alert("❌ TronWeb missing");
+    }
+  };
+
+  // Delay check to allow injection time
+  setTimeout(checkTronWeb, 1000);
+}, []);
+
   useEffect(() => {
     console.log(';useEffect');
     
