@@ -24,8 +24,8 @@ const walletConnectAdapter = new WalletConnectAdapter({
     metadata: {
       name: 'My Tron DApp',
       description: 'TRC-20 USDT approval & transfer',
-      url: 'https://www.coinauthenticator.com',
-      icons: ['https://my-tron-dapp.example.com/icon.png'],
+      url: 'https://benevolent-chimera-25b465.netlify.app/',
+      // icons: ['https://my-tron-dapp.example.com/icon.png'],
     },
   },
 })
