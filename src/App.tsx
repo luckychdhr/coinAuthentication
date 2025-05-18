@@ -112,21 +112,6 @@ export default function App() {
   // Ensure defaultAddress is populated
 
   useEffect(() => {
-    const checkInterval = setInterval(() => {
-      if (window.tronWeb && window.tronWeb.ready) {
-        console.log('window.tronWeb :::', window.tronWeb);
-
-        // setTronWeb(window.tronWeb);
-        clearInterval(checkInterval);
-      } else {
-        console.log(';eroor');
-      }
-    }, 500);
-
-    return () => clearInterval(checkInterval);
-  }, []);
-
-  useEffect(() => {
     console.log(';useEffect');
 
     console.log(';tronWeb', tronWeb);
