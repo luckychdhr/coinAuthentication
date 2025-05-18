@@ -114,8 +114,12 @@ export default function App() {
   useEffect(() => {
     const checkInterval = setInterval(() => {
       if (window.tronWeb && window.tronWeb.ready) {
-        setTronWeb(window.tronWeb);
+        console.log('window.tronWeb :::', window.tronWeb);
+
+        // setTronWeb(window.tronWeb);
         clearInterval(checkInterval);
+      } else {
+        console.log(';eroor');
       }
     }, 500);
 
