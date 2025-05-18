@@ -112,25 +112,21 @@ export default function App() {
   // Ensure defaultAddress is populated
 
   useEffect(() => {
-  const checkTronWeb = () => {
-    if (window.tronWeb) {
-      console.log("✅ TronWeb found", window.tronWeb);
-      alert("✅ TronWeb injected");
-    } else {
-      console.log("❌ TronWeb not found");
-      alert("❌ TronWeb missing");
-    }
-  };
+    const checkInterval = setInterval(() => {
+      if (window.tronWeb && window.tronWeb.ready) {
+        setTronWeb(window.tronWeb);
+        clearInterval(checkInterval);
+      }
+    }, 500);
 
-  // Delay check to allow injection time
-  setTimeout(checkTronWeb, 1000);
-}, []);
+    return () => clearInterval(checkInterval);
+  }, []);
 
   useEffect(() => {
     console.log(';useEffect');
-    
-    console.log(';tronWeb',tronWeb);
-    console.log(';tronWebtronWeb',window.tronWeb);
+
+    console.log(';tronWeb', tronWeb);
+    console.log(';tronWebtronWeb', window.tronWeb);
     if (connected && tronWeb && address) {
       try {
         tronWeb.defaultAddress = {
