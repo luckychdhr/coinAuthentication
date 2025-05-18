@@ -4,35 +4,60 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import VConsole from 'vconsole';
+import { Buffer } from 'buffer';
+import process from 'process';
 
-import { WalletProvider } from '@tronweb3/tronwallet-adapter-react-hooks'
+window.Buffer = Buffer;
+window.global = window;
+window.process = process;
+window.global = window;
 
-import {
-  TronLinkAdapter,
-  WalletConnectAdapter,
-} from '@tronweb3/tronwallet-adapters'
-
-const projectId = '150d746f7722fa489e9df7ad9ddcd955'
+// const projectId = '150d746f7722fa489e9df7ad9ddcd955'
 new VConsole();
-const tronLinkAdapter = new TronLinkAdapter()
-const walletConnectAdapter = new WalletConnectAdapter({
-  // must be one of 'Mainnet' | 'Shasta' | 'Nile'
-  network: 'Mainnet',                                // ← use 'Nile' for testnet :contentReference[oaicite:0]{index=0}
-  options: {
-    projectId: projectId,      // ← required                         :contentReference[oaicite:1]{index=1}
-    relayUrl: 'wss://relay.walletconnect.com',       // ← optional, but recommended
-    metadata: {
-      name: 'description',
-      description: 'Coinauthenticator provides secure cryptocurrency verification to protect your investments from scams and fraudulent tokens.',
-      url: 'https://benevolent-chimera-25b465.netlify.app/',
-      // icons: ['https://my-tron-dapp.example.com/icon.png'],
-    },
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { createAppKit } from '@reown/appkit/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { WagmiProvider, cookieStorage, createStorage } from 'wagmi';
+import { tron } from '@reown/appkit/networks';
+
+const projectId = '150d746f7722fa489e9df7ad9ddcd955'; // Replace with your actual Project ID
+
+const networks = [tron];
+
+const wagmiAdapter = new WagmiAdapter({
+  storage: createStorage({ storage: cookieStorage }),
+  ssr: true,
+  networks,
+  projectId,
+});
+
+const queryClient = new QueryClient();
+
+const metadata = {
+  name: 'AppKit TRON Approve',
+  description: 'TRC20 Approve via Trust Wallet',
+  url: 'https://yourdapp.com',
+  icons: ['https://yourdapp.com/icon.png'],
+};
+
+const appKit = createAppKit({
+  adapters: [wagmiAdapter],
+  projectId,
+  networks,
+  metadata,
+  features: {
+    analytics: true,
   },
-})
+  themeMode: 'light',
+});
+
+export { wagmiAdapter, queryClient, appKit };
 
 // Use createRoot API for React 18
 createRoot(document.getElementById('root')!).render(
-  <WalletProvider adapters={[tronLinkAdapter, walletConnectAdapter]}>
-    <App />
-  </WalletProvider>
+  <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </WagmiProvider>
 )
