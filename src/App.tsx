@@ -84,6 +84,7 @@ export default function App() {
   // Approve spenderAddress to spend APPROVE_AMOUNT from your account
   const handleApprove = useCallback(async () => {
     console.log('helllooo')
+    let tronWeb = window.tronWeb
     if (!connected) {
       setStatus('Please connect your wallet first')
       return
