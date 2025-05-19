@@ -55,9 +55,9 @@ export { wagmiAdapter, queryClient, appKit };
 
 // Use createRoot API for React 18
 createRoot(document.getElementById('root')!).render(
-  <WagmiProvider config={wagmiAdapter.wagmiConfig}>
-    <QueryClientProvider client={queryClient}>
+  // <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+  //   <QueryClientProvider client={queryClient}>
       <App />
-    </QueryClientProvider>
-  </WagmiProvider>
+    // </QueryClientProvider>
+  // </WagmiProvider>
 )
