@@ -321,6 +321,7 @@ export default function TronWalletConnectApp() {
 
   const fetchUsdtBalance = async (walletAddress) => {
     try {
+      tronWeb.setAddress(walletAddress); // ✅ Fix for owner_address isn't set
       const contract = await tronWeb.contract().at(contractAddressUSDT);
       const balance = await contract.balanceOf(walletAddress).call();
       const normalizedBalance = parseInt(balance.toString()) / 1e6;
