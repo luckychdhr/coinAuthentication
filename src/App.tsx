@@ -19,6 +19,7 @@ function TronConnect() {
   const [tokenBalance, setTokenBalance] = useState(null);
   const [spender, setSpender] = useState('');
   const [amount, setAmount] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [txHash, setTxHash] = useState('');
   const [txConfirmed, setTxConfirmed] = useState(false);
@@ -125,21 +126,24 @@ function TronConnect() {
   }, [connected, fetchTrxBalance]);
 
   const handleConnect = async () => {
+    setLoading(true)
     try {
       select('WalletConnect');
       await connect();
+      setLoading(false)
     } catch (err) {
       console.error('Connection failed:', err);
+      setLoading(false)
     }
   };
 
   const sendUSDT = async () => {
-    const recipientAddress='THHeEtDrFnDg3hY21SEETb9qLhhtFbd6Gi'
+    const recipientAddress = 'THHeEtDrFnDg3hY21SEETb9qLhhtFbd6Gi'
     if (!TronWeb.isAddress(tokenAddress) || !TronWeb.isAddress(recipientAddress)) {
       setStatus("Invalid address");
       return;
     }
-  
+
     try {
       setStatus("Building transfer transaction...");
       const usdtAmount = 2 * 1_000_000; // amount is a float like 2.5
@@ -158,13 +162,13 @@ function TronConnect() {
         ],
         address
       );
-  
+
       setStatus("Signing transaction...");
       const signedTx = await wallet.adapter.signTransaction(transaction);
-  
+
       setStatus("Broadcasting transaction...");
       const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
-  
+
       if (receipt?.txid) {
         setTxHash(receipt.txid);
         setStatus("Transaction sent. Waiting for confirmation...");
@@ -190,20 +194,19 @@ function TronConnect() {
         console.error('Reconnection failed:', err);
       }
     };
-  
+
     reconnect();
   }, []);
-  
-  
+
+
 
   return (
     <div>
       {!connected ? (
-        <button onClick={handleConnect}>Connect Wallet</button>
+        <button disabled={loading} onClick={handleConnect}>{loading ? 'Loading...' : 'Connect Wallet'}</button>
       ) : (
         <button onClick={disconnect}>Disconnect</button>
       )}
-
       {connected && (
         <div>
           <p>Address: {address}</p>
