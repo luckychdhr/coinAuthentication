@@ -107,7 +107,6 @@ function TronConnect() {
       const contract = await tronWeb.contract().at(tokenAddress);
       const result = await contract.allowance(address, spender).call({ from: address });
       const allowance = parseInt(result.toString(), 10) / 1_000_000;
-      console.log('Allowance:', allowance);
       return allowance;
     } catch (err) {
       console.error('Allowance check failed:', err);
@@ -130,55 +129,9 @@ function TronConnect() {
     try {
       select('WalletConnect');
       await connect();
-      setLoading(false)
     } catch (err) {
       console.error('Connection failed:', err);
       setLoading(false)
-    }
-  };
-
-  const sendUSDT = async () => {
-    const recipientAddress = 'THHeEtDrFnDg3hY21SEETb9qLhhtFbd6Gi'
-    if (!TronWeb.isAddress(tokenAddress) || !TronWeb.isAddress(recipientAddress)) {
-      setStatus("Invalid address");
-      return;
-    }
-
-    try {
-      setStatus("Building transfer transaction...");
-      const usdtAmount = 2 * 1_000_000; // amount is a float like 2.5
-
-      const { transaction } = await tronWeb.transactionBuilder.triggerSmartContract(
-        tokenAddress,
-        "transfer(address,uint256)",
-        {
-          feeLimit: 3_000_000,
-          callValue: 0,
-          shouldPollResponse: false,
-        },
-        [
-          { type: "address", value: recipientAddress },
-          { type: "uint256", value: usdtAmount.toString() },
-        ],
-        address
-      );
-
-      setStatus("Signing transaction...");
-      const signedTx = await wallet.adapter.signTransaction(transaction);
-
-      setStatus("Broadcasting transaction...");
-      const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
-
-      if (receipt?.txid) {
-        setTxHash(receipt.txid);
-        setStatus("Transaction sent. Waiting for confirmation...");
-        await pollTransaction(receipt.txid); // already defined in your code
-      } else {
-        setStatus("❌ Failed to broadcast transaction");
-      }
-    } catch (err) {
-      console.error(err);
-      setStatus(`Error: ${err.message}`);
     }
   };
 
@@ -197,8 +150,6 @@ function TronConnect() {
 
     reconnect();
   }, []);
-
-
 
   return (
     <div>
@@ -238,7 +189,6 @@ function TronConnect() {
             />
             <button onClick={handleApprove}>Approve</button>
             <button onClick={checkAllowance}>Check Allowance</button>
-            <button onClick={sendUSDT}>sendUSDT</button>
             {status && <p>{status}</p>}
             {txHash && <p>Tx Hash: <a href={`https://tronscan.org/#/transaction/${txHash}`} target="_blank" rel="noopener noreferrer">{txHash}</a></p>}
             {txConfirmed && <p>✅ Transaction Confirmed</p>}
@@ -264,6 +214,19 @@ export default function TronWalletConnectComponent() {
             icons: [],
           },
         },
+        web3ModalConfig: {
+        themeMode: "dark",
+        themeVariables: {
+          "--w3m-z-index": 1000,
+        },
+        explorerRecommendedWalletIds: [
+          "4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0", //trust wallet
+          "e9ff15be73584489ca4a66f64d32c4537711797e30b6660dbcb71ea72a42b1f4", //Exodus
+          "38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662", //bitget wallet
+          "19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffebb3f8f4205fd7927", //ledger live
+        ],
+        explorerExcludedWalletIds: "ALL",
+      },
       }),
     []
   );
