@@ -634,7 +634,7 @@ a:hover {
   object-fit: cover;
   will-change: transform, opacity; /* Optimize image animations */
   max-width: 100%;
-  height: auto;
+  /* height: auto; */
   transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Smooth fallback */
 }
 

@@ -27,7 +27,7 @@ const Button = ({
   
   const buttonAnimation = useSpring({
     transform: isHovered ? 'translateY(-2px)' : 'translateY(0px)',
-    opacity: isHovered ? 1 : 0.8,
+    opacity: isHovered ? 1 : 1,
     config: { tension: 300, friction: 20 }
   })
 
