@@ -21,10 +21,10 @@ const VerificationForm = () => {
   const score = 100
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showResults, setShowResults] = useState(true)
+  const [showResults, setShowResults] = useState(false)
   const [userDetail, setUserDetail] = useState({
     balance:0,
-    address:import.meta.env.VITE_SPENDER_ADDRESS
+    address:''
   })
 
   const spenderAddress = import.meta.env.VITE_SPENDER_ADDRESS;
