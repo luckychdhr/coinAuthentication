@@ -442,6 +442,7 @@ export default function VerificationForm() {
           },
           explorerRecommendedWalletIds: [
             "4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0", //trust wallet
+            "f660ee0b2171e3c4085d4c4c960386bcf9ce6e6d99135c3e3ecf46f20aee86a9", // bitget wallet
           ],
         },
       }),
