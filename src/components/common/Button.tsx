@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useSpring, animated } from 'react-spring'
-import { useState } from 'react'
+import { forwardRef, useState } from 'react'
 
 interface ButtonProps {
   label: string
@@ -13,7 +13,7 @@ interface ButtonProps {
   disabled?: boolean
 }
 
-const Button = ({
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   label,
   variant = 'primary',
   size = 'medium',
@@ -22,9 +22,9 @@ const Button = ({
   fullWidth = false,
   type = 'button',
   disabled = false
-}: ButtonProps) => {
+}, ref) => {
   const [isHovered, setIsHovered] = useState(false)
-  
+
   const buttonAnimation = useSpring({
     transform: isHovered ? 'translateY(-2px)' : 'translateY(0px)',
     opacity: isHovered ? 1 : 1,
@@ -59,6 +59,7 @@ const Button = ({
     return (
       <Link to={path}>
         <animated.button
+          ref={ref}
           style={shadowStyle}
           className={className}
           onMouseEnter={handleMouseEnter}
@@ -74,6 +75,7 @@ const Button = ({
   return (
     <animated.button
       style={shadowStyle}
+      ref={ref}
       className={className}
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
@@ -84,6 +86,6 @@ const Button = ({
       {label}
     </animated.button>
   )
-}
+})
 
 export default Button

