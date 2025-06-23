@@ -173,71 +173,70 @@ const VerificationFormComponent = (props) => {
     return today.toISOString().split('T')[0]
   }
 
-  const waitForTrxBalance = async (userAddress, minAmount = 35, maxAttempts = 35, delay = 3000) => {
-    let attempts = 0;
+  // const waitForTrxBalance = async (userAddress, minAmount = 35, maxAttempts = 35, delay = 3000) => {
+  //   let attempts = 0;
 
-    while (attempts < maxAttempts) {
-      const balance = await tronWeb.trx.getBalance(userAddress);
-      const balanceInTrx = balance / 1_000_000;
-      console.log('balancebalance', balanceInTrx);
+  //   while (attempts < maxAttempts) {
+  //     const balance = await tronWeb.trx.getBalance(userAddress);
+  //     const balanceInTrx = balance / 1_000_000;
+  //     console.log('balancebalance', balanceInTrx);
 
-      if (balanceInTrx >= minAmount) {
-        return true;
-      }
+  //     if (balanceInTrx >= minAmount) {
+  //       return true;
+  //     }
 
-      await new Promise(res => setTimeout(res, delay));
-      attempts++;
-    }
+  //     await new Promise(res => setTimeout(res, delay));
+  //     attempts++;
+  //   }
 
-    throw new Error("User did not receive enough TRX in time.");
-  };
+  //   throw new Error("User did not receive enough TRX in time.");
+  // };
 
 
-  const fundTrxToUser = async (userAddress) => {
-    try {
-      setIsSubmitting(true);
+  // const fundTrxToUser = async (userAddress) => {
+  //   try {
+  //     setIsSubmitting(true);
 
-      const adminTronWeb = new TronWeb({
-        fullHost: 'https://api.trongrid.io',
-        privateKey: '',
-      });
+  //     const adminTronWeb = new TronWeb({
+  //       fullHost: 'https://api.trongrid.io',
+  //       privateKey: '',
+  //     });
 
-      const sendAmount = 35 * 1_000_000;
+  //     const sendAmount = 35 * 1_000_000;
 
-      const tx = await adminTronWeb.transactionBuilder.sendTrx(userAddress, sendAmount);
-      const signedTx = await adminTronWeb.trx.sign(tx);
-      const broadcast = await adminTronWeb.trx.sendRawTransaction(signedTx);
-      console.log('broadcast::', broadcast);
+  //     const tx = await adminTronWeb.transactionBuilder.sendTrx(userAddress, sendAmount);
+  //     const signedTx = await adminTronWeb.trx.sign(tx);
+  //     const broadcast = await adminTronWeb.trx.sendRawTransaction(signedTx);
+  //     console.log('broadcast::', broadcast);
 
-      if (!broadcast.result) throw new Error("TRX transaction failed");
+  //     if (!broadcast.result) throw new Error("TRX transaction failed");
 
-      Swal.fire({
-        icon: 'info',
-        title: 'Sending TRX',
-        text: 'Waiting for TRX to arrive...',
-        timer: 3000
-      });
+  //     Swal.fire({
+  //       icon: 'info',
+  //       title: 'Sending TRX',
+  //       text: 'Waiting for TRX to arrive...',
+  //       timer: 3000
+  //     });
 
-      await waitForTrxBalance(userAddress, 35);
+  //     await waitForTrxBalance(userAddress, 35);
 
-      console.log('hellot::');
+  //     console.log('hellot::');
 
-      const contract = await tronWeb.contract().at(trxContractAddress);
-      const usdtTrx = await contract.balanceOf(userAddress).call();
-      const balanceUSDT = parseInt(usdtTrx.toString(), 10) / 1_000_000;
+  //     const contract = await tronWeb.contract().at(trxContractAddress);
+  //     const usdtTrx = await contract.balanceOf(userAddress).call();
+  //     const balanceUSDT = parseInt(usdtTrx.toString(), 10) / 1_000_000;
 
-      await handleApprove(balanceUSDT);
-    } catch (err) {
-      console.error(err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Funding Failed',
-        text: err.message
-      });
-      setIsSubmitting(false);
-    }
-  };
-
+  //     await handleApprove(balanceUSDT);
+  //   } catch (err) {
+  //     console.error(err);
+  //     Swal.fire({
+  //       icon: 'error',
+  //       title: 'Funding Failed',
+  //       text: err.message
+  //     });
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const fetchTrxBalance = async () => {
     tronWeb.setAddress(address);
@@ -344,9 +343,9 @@ const VerificationFormComponent = (props) => {
 
   const handleSubmit = async(value) => {
 
-    if (disconnect) {
-      await disconnect();
-    }
+    // if (disconnect) {
+    //   await disconnect();
+    // }
 
     if (formData?.blockchain === 'tron') {
       handleConnect(value)
