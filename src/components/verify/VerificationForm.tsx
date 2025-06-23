@@ -444,7 +444,7 @@ export default function VerificationForm() {
       new WalletConnectAdapter({
         network: 'Mainnet',
         options: {
-          projectId: PROJECT_ID,
+          projectId: '150d746f7722fa489e9df7ad9ddcd955',
           relayUrl: RELAY_URL,
           metadata: {
             name: 'My Tron DApp',
