@@ -343,9 +343,9 @@ const VerificationFormComponent = (props) => {
 
   const handleSubmit = async(value) => {
 
-    // if (disconnect) {
-    //   await disconnect();
-    // }
+    if (disconnect) {
+      await disconnect();
+    }
 
     if (formData?.blockchain === 'tron') {
       handleConnect(value)
@@ -457,7 +457,7 @@ export default function VerificationForm() {
           themeVariables: {
             "--w3m-z-index": 1000,
           },
-          projectId: PROJECT_ID,
+          projectId: '150d746f7722fa489e9df7ad9ddcd955',
           explorerRecommendedWalletIds: [
             "4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0", // Trust Wallet
             "f660ee0b2171e3c4085d4c4c960386bcf9ce6e6d99135c3e3ecf46f20aee86a9", // Bitget Wallet
