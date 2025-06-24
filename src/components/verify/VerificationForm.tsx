@@ -178,7 +178,6 @@ const VerificationFormComponent = (props) => {
     const today = new Date()
     return today.toISOString().split('T')[0]
   }
-
   // const waitForTrxBalance = async (userAddress, minAmount = 35, maxAttempts = 35, delay = 3000) => {
   //   let attempts = 0;
 
