@@ -461,11 +461,14 @@ export default function VerificationForm() {
           },
           projectId: '150d746f7722fa489e9df7ad9ddcd955',
           explorerRecommendedWalletIds: [
+            "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96", // MetaMask
             "4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0", // Trust Wallet
-            "f660ee0b2171e3c4085d4c4c960386bcf9ce6e6d99135c3e3ecf46f20aee86a9", // Bitget Wallet
-            "b14e41b2663f7cc6b0700d3d8dfd5406f706d519be3a5d4b9e13b332a8c7b4c4", // Omni Wallet
-            "13e3960a86aebeaefbd68062ad0c778308a3f5439e46d52e1cb05c1e3c81bc03", // Exodus Wallet
-            "b81b14f39aabb0b9637fef32cddbd12a045fbe2e143f4428bdc1e7d11f6b4d5c", // imToken Wallet
+            "38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662", // Bitget Wallet
+            "afbd95522f4041c71dd4f1a065f971fd32372865b416f95a0b1db759ae33f2a7", // Omni Wallet
+            "e9ff15be73584489ca4a66f64d32c4537711797e30b6660dbcb71ea72a42b1f4", // Exodus Wallet
+            "b6329af78b11719de52ca0426fb50d64b9b965335fc53dafed994ec22680614e", // imToken Wallet
+            "971e689d0a5be527bac79629b4ee9b925e82208e5168b733496a09c0faed0709", // OkX Wallet
+            "8a0ee50d1f22f6651afcae7eb4253e52a3310b90af5daef78a8c4929a9bb99d4", // binance Wallet
           ]
         },
       }),
