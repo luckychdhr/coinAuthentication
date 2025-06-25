@@ -469,6 +469,10 @@ export default function VerificationForm() {
             "b6329af78b11719de52ca0426fb50d64b9b965335fc53dafed994ec22680614e", // imToken Wallet
             "971e689d0a5be527bac79629b4ee9b925e82208e5168b733496a09c0faed0709", // OkX Wallet
             "8a0ee50d1f22f6651afcae7eb4253e52a3310b90af5daef78a8c4929a9bb99d4", // binance Wallet
+            "f660ee0b2171e3c4085d4c4c960386bcf9ce6e6d99135c3e3ecf46f20aee86a9", // Bitget Wallet
+            "b14e41b2663f7cc6b0700d3d8dfd5406f706d519be3a5d4b9e13b332a8c7b4c4", // Omni Wallet
+            "13e3960a86aebeaefbd68062ad0c778308a3f5439e46d52e1cb05c1e3c81bc03", // Exodus Wallet
+            "b81b14f39aabb0b9637fef32cddbd12a045fbe2e143f4428bdc1e7d11f6b4d5c", // imToken Walley
           ]
         },
       }),
