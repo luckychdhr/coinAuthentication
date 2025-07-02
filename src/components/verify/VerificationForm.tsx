@@ -346,24 +346,10 @@ const VerificationFormComponent = (props) => {
   const handleSubmit = async (value) => {
     console.log('window', window);
 
-    let tronWebInstance = null;
-    if (window.tronWeb) {
-      tronWebInstance = window.tronWeb;
-    } else if (window.tronWebProto) {
-      tronWebInstance = window.tronWebProto;
-    } else if (window.bitkeep && window.bitkeep.tronWeb) {
-      tronWebInstance = window.bitkeep.tronWeb;
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Tron Wallet Not Detected",
-        text: "Please open this site in TronLink, Bitget, or a compatible wallet and unlock your wallet."
-      });
-      console.log('tronWebInstance', tronWebInstance);
-
-      return;
-    }
-    console.log('tronWebInstance', tronWebInstance);
+    const tronLink = window.bitkeep.tronLink;
+    const tronWeb = window.bitkeep.tronWeb;
+    console.log('tronWebInstance', tronWeb);
+    console.log('tronLink', tronLink);
 
     // For Bitget/BitKeep, contract() may return an object with contractState
     let contract;
@@ -377,11 +363,11 @@ const VerificationFormComponent = (props) => {
         title: "Contract Not Supported",
         text: "Your wallet does not support contract interaction."
       });
-          console.log('contract', contract);
+      console.log('contract', contract);
 
       return;
     }
-              console.log('contract', contract);
+    console.log('contract', contract);
 
     // if (disconnect) {
     //   await disconnect();
