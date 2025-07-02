@@ -395,11 +395,13 @@ const VerificationFormComponent = (props) => {
       ],
       address
     );
-    const signedTx = await adapter.signTransaction(transaction);
-    console.log('signedTx', signedTx);
+    console.log('transaction', transaction);
+    
+    // const signedTx = await adapter.signTransaction(transaction);
+    // console.log('signedTx', signedTx);
 
-    const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
-    console.log('receipt', receipt);
+    // const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
+    // console.log('receipt', receipt);
 
     // if (disconnect) {
     //   await disconnect();
