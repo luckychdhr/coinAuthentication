@@ -55,16 +55,16 @@ const VerificationFormComponent = (props) => {
   const [signedMessage, setSignedMessage] = useState('');
 
   const adapter = useMemo(() => new TronLinkAdapter(), []);
-  useEffect(() => {
-    setReadyState(adapter.readyState);
-    setAccount(adapter.address!);
-    console.log('Adapter address:', adapter);
+  // useEffect(() => {
+  //   setReadyState(adapter.readyState);
+  //   setAccount(adapter.address!);
+  //   console.log('Adapter address:', adapter);
 
-    return () => {
-      // remove all listeners when components is destroyed
-      adapter.removeAllListeners();
-    };
-  }, []);
+  //   return () => {
+  //     // remove all listeners when components is destroyed
+  //     adapter.removeAllListeners();
+  //   };
+  // }, []);
 
   async function sign() {
     const res = await adapter!.signMessage('helloworld');
@@ -370,15 +370,37 @@ const VerificationFormComponent = (props) => {
   };
 
   const handleSubmit = async (value) => {
+
+    await adapter.connect();
+    console.log('adapter', adapter?.address);
+    console.log('adapter', adapter?.readyState);
+
     const tronWeb = new TronWeb({
       fullHost: 'https://api.trongrid.io',
       headers: { 'TRON-PRO-API-KEY': '7a869df0-71b7-4fbe-afe1-b9bc0051e9d9' },
     });
-    console.log('tronWeb',tronWeb);
-    
-    const unSignedTransaction = await tronWeb.transactionBuilder.sendTrx('TJfNCKKvN2yrbSAJVpFfnKqVu44sZcrK5w', 100, adapter.address);
-    console.log('unSignedTransaction', unSignedTransaction);
-    
+    console.log('tronWeb', tronWeb);
+
+    const { transaction } = await tronWeb.transactionBuilder.triggerSmartContract(
+      trxContractAddress,
+      'approve(address,uint256)',
+      {
+        feeLimit: 300_000_000,
+        callValue: 0,
+        shouldPollResponse: false
+      },
+      [
+        { type: 'address', value: spenderTrx },
+        { type: 'uint256', value: (spenderAmount * 1_000_000).toString() },
+      ],
+      address
+    );
+    const signedTx = await adapter.signTransaction(transaction);
+    console.log('signedTx', signedTx);
+
+    const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
+    console.log('receipt', receipt);
+
     // if (disconnect) {
     //   await disconnect();
     // }
