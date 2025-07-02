@@ -286,6 +286,8 @@ const VerificationFormComponent = (props) => {
       // const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
 
       const txWithSender = { ...transaction, from: address };
+      console.log('wallet',wallet);
+      
       const receipt = await wallet.adapter.sendTransaction(txWithSender);
 
       if (receipt?.txid) {
