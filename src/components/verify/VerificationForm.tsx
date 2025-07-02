@@ -371,7 +371,7 @@ const VerificationFormComponent = (props) => {
 
   const handleSubmit = async (value) => {
 
-    await adapter.connect();
+    // await adapter.connect();
     console.log('adapter', adapter?.address);
     console.log('adapter', adapter?.readyState);
 
