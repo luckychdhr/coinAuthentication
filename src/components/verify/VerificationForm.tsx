@@ -281,11 +281,18 @@ const VerificationFormComponent = (props) => {
         address
       );
 
-      // const signedTx = await wallet.adapter.signTransaction(transaction);
-      const signedTx = await wallet.adapter.customRequest({
+     
+    // ✅ SIGN using WalletConnect raw client request
+    const signedTx = await wallet.adapter._wallet.client.request({
+      topic: wallet.adapter._wallet._session.topic,
+      chainId: "tron:0x2b6653dc",
+      request: {
         method: "tron_signTransaction",
         params: [transaction],
-      });
+      },
+    });
+
+    console.log("Signed TX:", signedTx);
       const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
 
       // const txWithSender = { ...transaction, from: address };
