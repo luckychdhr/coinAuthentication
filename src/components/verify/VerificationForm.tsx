@@ -512,6 +512,18 @@ export default function VerificationForm() {
       }),
     []
   );
+
+  const originalConnect = adapter.connect.bind(adapter);
+  adapter.connect = () =>
+    originalConnect({
+      requiredNamespaces: {
+        tron: {
+          methods: ['tron_signTransaction', 'tron_signMessage'],
+          chains: ['tron:0x2b6653dc'],
+          events: [],
+        },
+      },
+    });
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const onError = (e) => {
