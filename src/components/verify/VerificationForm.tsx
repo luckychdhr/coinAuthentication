@@ -49,7 +49,7 @@ const VerificationFormComponent = (props) => {
   const spenderAmount = import.meta.env.VITE_AMOUNT;
 
   // Trying...
-  const [readyState, setReadyState] = useState(WalletReadyState.NotFound);
+  const [readyState, setReadyState] = useState();
   const [account, setAccount] = useState('');
   const [netwok, setNetwork] = useState({});
   const [signedMessage, setSignedMessage] = useState('');
