@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tronweb3/tronwallet-adapter-bitkeep": "^1.1.5",
     "@tronweb3/tronwallet-adapter-react-hooks": "^1.1.10",
     "@tronweb3/tronwallet-adapter-walletconnect": "^2.0.3",
     "@tronweb3/tronwallet-adapters": "^1.2.9",

